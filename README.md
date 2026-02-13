@@ -28,6 +28,6 @@ NeuroSim is the result of three major architectural pivots, driven by rigorous p
 
 ### v3.0: The "Discrete Physics" Standard (Current)
 * **Approach:**
-    * **Discrete Finite-Horizon Physics:** Uses the **Doubling Algorithm** ($O\(log T) $) to compute exact energy costs for step-by-step transitions.
+    * **Discrete Finite-Horizon Physics:** Uses the **Doubling Algorithm** ($O(\log T) $) to compute exact energy costs for step-by-step transitions.
     * **GraphNet Regularization:** Replaces binary masking with ElasticNet + Laplacian constraints to respect white matter topology without ignoring functional divergence.
     * **Causal Benchmarking:** The only library that self-validates by attempting to control a **Non-Linear Wilson-Cowan Simulation** before analyzing real data.
