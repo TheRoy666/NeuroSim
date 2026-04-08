@@ -63,23 +63,20 @@ These documents establish NeuroSim as the rigorously validated alternative to le
 
 ---
 
-## Expected Repository Structure
+## Repository Structure
+
+```bash
 NeuroSim/
 ├── docs/
-│   ├── validation/
-│   │   ├── FC_vs_EC_Validation.md
-│   │   └── FC_vs_EC_Validation.ipynb
-│   ├── whitepapers/
-│   │   ├── NeuroSim_v3.0_Finite_Horizon_Spec.md
-│   │   ├── NeuroSim_Architecture_Validation_Review.md
-│   │   └── NeuroSim_Engineering_Verification_Checklist.md
+│   ├── validation/          # FC vs EC mathematical validation + sandbox
+│   └── whitepapers/         # Architecture specs and verification reports
 ├── notebooks/
-│   └── fullpipeline_v3.0.ipynb          
-├── neurosim/                              
-├── tests/                                   
-├── figures/                                
-├── README.md
-└── LICENSE
+│   └── fullpipeline_v3.0.ipynb   # End-to-end demonstration (in progress)
+├── neurosim/                # Core library modules
+├── figures/                 # Visual outputs and diagrams
+├── tests/                   # Unit tests and physics benchmarks
+└── README.md
+```
 ---
 
 
