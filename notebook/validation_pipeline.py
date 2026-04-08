@@ -4,17 +4,17 @@ NeuroSim Validation Pipeline
 FC vs EC in Discrete Finite-Horizon NCT - Interactive Demonstration
 
 This script serves as the companion to the Jupyter notebook
-``notebooks/01_fc_vs_ec_validation.ipynb``.
+``notebook/01_fc_vs_ec_validation.ipynb``.
 
 It reproduces the "Teleportation Error" of FC-based NCT and validates
 the Van Loan Doubling Algorithm against a naiive O(T.N³) summation.
 
 Run with:
-    python notebooks/validation_pipeline.py
+    python notebook/validation_pipeline.py
 
 Or convert to notebook:
     pip install jupytext
-    jupytext --to notebook notebooks/validation_pipeline.py
+    jupytext --to notebook notebook/validation_pipeline.py
 """
 
 # %% [markdown]
