@@ -127,12 +127,12 @@ NeuroSim is deliberately engineered with a **science-first** philosophy: every a
 ### Long-Term Vision
 The ultimate goal is to move beyond static connectomics toward **energetic phenotyping** of brain disorders — where "how much energy does it cost to exit a pathological state?" becomes a quantifiable, clinically actionable biomarker. By maintaining strict separation between technical harmonization and biological signal, and by anchoring every metric in finite-time discrete physics, NeuroSim aims to provide the methodological foundation for safe, personalized, non-invasive brain stimulation therapies.
 
-**Guiding Principle:**  
+### **Guiding Principle:**  
 *Engineering scalability follows only after rigorous scientific validation.*  
 No feature is added unless it demonstrably improves physical fidelity or clinical interpretability.
 
-##**License**
-MIT License — see LICENSE for details.
+### **License**
+Apache2.0 License — see LICENSE for details.
 
-##**Full documentation** is available in the docs/ directory.
+### **Full documentation** is available in the docs/ directory.
 Contributions and feedback welcome — especially on the physics and clinical validation aspects.
