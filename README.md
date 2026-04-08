@@ -8,7 +8,6 @@
   <img src="https://img.shields.io/badge/Physics--Constrained-Network_Control_Theory-8B00FF?style=for-the-badge" alt="Physics-Constrained" />
 </p>
 
-**GSoC 2026 / INCF Project #39 — National Brain Research Centre (NBRC) & EBRAINS**
 [![iNCF](https://img.shields.io/badge/Project-iNCF%20GSoC%202026-blue)](https://neurostars.org/t/gsoc-2026-project-39)
 **NeuroSim: A Physics Constrained Model for Finite Horizon Network Control Theory**
 
