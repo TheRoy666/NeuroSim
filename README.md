@@ -101,15 +101,17 @@ Full working demo notebook coming soon in notebooks/fullpipeline_v3.0.ipynb.
 
 ## Current Status (GSoC 2026)
 
-Component,Status,Deliverable
-Finite-Horizon Gramian,✅,Doubling Algorithm
-GraphNet Connectivity,✅,Soft priors + FISTA
-Blind Harmonization,✅,Controls-only ComBat
-FC vs EC Validation,✅,Mathematical sandbox
-Wilson-Cowan Benchmark,✅,Limit-cycle unit test
-All validation documents and specifications complete ✓
-Engineering verification phase in progress
-Core modules (harmonization, connectivity, control) under active development with strict adherence to the validated architecture
+| Component                    | Status | Deliverable                              |
+|------------------------------|--------|------------------------------------------|
+| Finite-Horizon Gramian       | ✅     | Doubling Algorithm                       |
+| GraphNet Connectivity        | ✅     | Soft priors + FISTA                      |
+| Blind Harmonization          | ✅     | Controls-only ComBat                     |
+| FC vs EC Validation          | ✅     | Mathematical sandbox                     |
+| Wilson-Cowan Benchmark       | ✅     | Limit-cycle unit test                    |
+
+- All validation documents and specifications complete ✓  
+- Engineering verification phase in progress  
+- Core modules (`harmonization`, `connectivity`, `control`) under active development with strict adherence to the validated architecture  
 
 ## Future Directions
 
