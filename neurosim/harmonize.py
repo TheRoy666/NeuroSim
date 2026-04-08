@@ -91,37 +91,26 @@ def detect_site_effects(
     sites = np.asarray(site_labels)
     unique_sites = np.unique(sites)
 
-    if len(unique_sites) < 2:
-        return {
-            "n_significant": 0,
-            "fraction_sig": 0.0,
-            "recommend_harmonise": False,
-            "mean_F": 0.0,
-            "note": "Only one site detected - harmonisation not applicable.",
-        }
+   if len(unique_sites) < 2:
+        return {"recommend_harmonise": False, "note": "Only one site detected."}
 
     n_features = X.shape[1]
     idx = np.random.choice(n_features, size=min(n_features_check, n_features), replace=False)
     X_sub = X[:, idx]
 
-    p_values, f_stats = [], []
+    p_values = []
     for col in range(X_sub.shape[1]):
         groups = [X_sub[sites == s, col] for s in unique_sites]
-        f, p = stats.f_oneway(*groups)
+        _, p = stats.f_oneway(*groups)
         p_values.append(p)
-        f_stats.append(f)
 
     p_values = np.array(p_values)
-    n_sig = int((p_values < alpha).sum())
-    frac  = n_sig / len(p_values)
+    frac_sig = (p_values < alpha).mean()
 
     return {
-        "n_significant": n_sig,
-        "fraction_sig": frac,
-        "recommend_harmonise": frac > 0.05,
-        "mean_F": float(np.nanmean(f_stats)),
-        "n_tested": len(p_values),
-    }
+        "fraction_sig": float(frac_sig),
+        "recommend_harmonise": frac_sig > 0.05,
+    } 
 
 
 # BlindHarmonizer (controls-only ComBat-style Empirical Bayes based)
@@ -154,19 +143,13 @@ class BlindHarmonizer:
     >>> X_harmonised = harmonizer.transform(X_all, site_all)
     """
 
-    def __init__(self, biological_covariates: Optional[List[str]] = None):
-        self.biological_covariates = biological_covariates or []
-        self.site_means_: Dict = {}
-        self.site_vars_:  Dict = {}
+    def __init__(self):
         self.grand_mean_: Optional[NDArray] = None
+        self.site_means_: Dict = {}
+        self.site_vars_: Dict = {}
         self.is_fitted_ = False
 
-    def fit(
-        self,
-        X_controls: NDArray,
-        site_controls: Sequence,
-        covariates_df: Optional[pd.DataFrame] = None,
-    ) -> "BlindHarmonizer":
+    def fit(self, X_controls: NDArray, site_controls: Sequence) -> "BlindHarmonizer":
         """Estimate site effects from healthy control data only.
 
         Parameters
@@ -183,16 +166,6 @@ class BlindHarmonizer:
         X = np.asarray(X_controls, dtype=float)
         sites = np.asarray(site_controls)
 
-        # OPTIONAL covariate regression (preserve biological signal)
-        if covariates_df is not None and len(self.biological_covariates) > 0:
-            from sklearn.linear_model import LinearRegression
-            cov = covariates_df[self.biological_covariates].values.astype(float)
-            reg = LinearRegression(fit_intercept=True).fit(cov, X)
-            X = X - reg.predict(cov) + reg.intercept_
-            self._cov_model = reg
-        else:
-            self._cov_model = None
-
         self.grand_mean_ = X.mean(axis=0)
         X_centred = X - self.grand_mean_
 
@@ -200,16 +173,12 @@ class BlindHarmonizer:
             mask = sites == site
             X_site = X_centred[mask]
             self.site_means_[site] = X_site.mean(axis=0)
-            self.site_vars_[site]  = np.maximum(X_site.var(axis=0), 1e-6)
+            self.site_vars_[site] = np.maximum(X_site.var(axis=0), 1e-6)
 
         self.is_fitted_ = True
         return self
 
-    def transform(
-        self,
-        X_all: NDArray,
-        site_all: Sequence,
-    ) -> NDArray:
+    def transform(self, X_all: NDArray, site_all: Sequence) -> NDArray:
         """Apply control-derived site corrections to all subjects.
 
         Parameters
@@ -222,20 +191,28 @@ class BlindHarmonizer:
         X_harmonised : (N_all, F) ndarray - Site-corrected features.
         """
         if not self.is_fitted_:
-            raise RuntimeError("Call .fit() on control data before .transform().")
+            raise RuntimeError("Call .fit() on control data first.")
 
         X = np.asarray(X_all, dtype=float).copy()
         sites = np.asarray(site_all)
-
-        unknown = set(np.unique(sites)) - set(self.site_means_.keys())
-        if unknown:
-            warnings.warn(
-                f"Sites {unknown} were not in training data. "
-                "No correction applied for these sites.",
-                RuntimeWarning, stacklevel=2,
-            )
-
         X_centred = X - self.grand_mean_
+
+        for site in np.unique(sites):
+            if site not in self.site_means_:
+                continue
+            mask = sites == site
+            mu_s = self.site_means_[site]
+            var_s = self.site_vars_[site]
+            grand_var = np.var(
+                np.concatenate([X_centred[sites == s] - self.site_means_[s]
+                                for s in self.site_means_], axis=0),
+                axis=0
+            )
+            grand_var = np.maximum(grand_var, 1e-6)
+
+            X_centred[mask] = (X_centred[mask] - mu_s) * np.sqrt(grand_var / var_s)
+
+        return X_centred + self.grand_mean_
 
         for site in np.unique(sites):
             if site not in self.site_means_:
