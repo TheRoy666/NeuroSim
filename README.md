@@ -2,13 +2,14 @@
 
 <p align="center">
   <img src="https://img.shields.io/badge/GSoC-2026-orange?style=for-the-badge&logo=google" alt="GSoC 2026" />
-  <img src="[![iNCF](https://img.shields.io/badge/Project-iNCF%20GSoC%202026-blue)](https://neurostars.org/t/gsoc-2026-project-39-national-brain-research-centre-nbrc-ebrains-neurosim-automating-in-silico-stimulation-for-non-invasive-biomarker-discovery/35619/10)" />
+  <img src="https://img.shields.io/badge/INCF-EBRAINS-%23005596?style=for-the-badge" alt="INCF EBRAINS" />
   <img src="https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python" alt="Python" />
   <img src="https://img.shields.io/badge/License-Apache2.0-green?style=for-the-badge" alt="MIT License" />
   <img src="https://img.shields.io/badge/Physics--Constrained-Network_Control_Theory-8B00FF?style=for-the-badge" alt="Physics-Constrained" />
 </p>
 
 ## **NeuroSim: A Physics Constrained Model for Finite Horizon Network Control Theory**
+[![iNCF](https://img.shields.io/badge/Project-iNCF%20GSoC%202026-blue)](https://neurostars.org/t/gsoc-2026-project-39-national-brain-research-centre-nbrc-ebrains-neurosim-automating-in-silico-stimulation-for-non-invasive-biomarker-discovery/35619/10)
 
 **Mentor:** Dr. Khushbu Agarwal  
 **Contributor:** Ritam Kanti Roy
