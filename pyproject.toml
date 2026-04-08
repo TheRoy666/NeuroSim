@@ -1,0 +1,66 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.backends.legacy:build"
+
+[project]
+name = "neurosim"
+version = "0.1.0-dev"
+description = "Physics-constrained finite-horizon Network Control Theory for neuroimaging"
+readme = "README.md"
+license = { text = "Apache-2.0" }
+authors = [
+  { name = "Ritam Kanti Roy", email = "rhitam2001@gmail.com" },
+]
+keywords = [
+  "neuroscience", "network control theory", "fMRI", "connectome",
+  "brain stimulation", "computational psychiatry",
+]
+classifiers = [
+  "Development Status :: 3 - Alpha",
+  "Intended Audience :: Science/Research",
+  "Topic :: Scientific/Engineering :: Bio-Informatics",
+  "License :: OSI Approved :: Apache Software License",
+  "Programming Language :: Python :: 3",
+  "Programming Language :: Python :: 3.9",
+  "Programming Language :: Python :: 3.10",
+  "Programming Language :: Python :: 3.11",
+]
+requires-python = ">=3.9"
+dependencies = [
+  "numpy>=1.24",
+  "scipy>=1.10",
+  "scikit-learn>=1.2",
+  "pandas>=1.5",
+  "matplotlib>=3.6",
+]
+
+[project.optional-dependencies]
+dev = [
+  "pytest>=7.0",
+  "pytest-cov",
+  "black",
+  "isort",
+  "mypy",
+]
+notebooks = [
+  "jupyter>=1.0",
+  "ipykernel",
+  "seaborn>=0.12",
+  "umap-learn>=0.5",
+]
+
+[project.urls]
+Homepage    = "https://github.com/TheRoy666/neurosim"
+Repository  = "https://github.com/TheRoy666/neurosim"
+Issues      = "https://github.com/TheRoy666/neurosim/issues"
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts   = "-v --tb=short"
+
+[tool.black]
+line-length = 88
+target-version = ["py39"]
+
+[tool.isort]
+profile = "black"
