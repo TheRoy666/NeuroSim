@@ -8,8 +8,8 @@
   <img src="https://img.shields.io/badge/Physics--Constrained-Network_Control_Theory-8B00FF?style=for-the-badge" alt="Physics-Constrained" />
 </p>
 
-[![iNCF](https://img.shields.io/badge/Project-iNCF%20GSoC%202026-blue)](https://neurostars.org/t/gsoc-2026-project-39)
-**NeuroSim: A Physics Constrained Model for Finite Horizon Network Control Theory**
+[![iNCF](https://img.shields.io/badge/Project-iNCF%20GSoC%202026-blue)](https://neurostars.org/t/gsoc-2026-project-39-national-brain-research-centre-nbrc-ebrains-neurosim-automating-in-silico-stimulation-for-non-invasive-biomarker-discovery/35619/10)
+## **NeuroSim: A Physics Constrained Model for Finite Horizon Network Control Theory**
 
 **Mentor:** Dr. Khushbu Agarwal  
 **Contributor:** Ritam Kanti Roy
