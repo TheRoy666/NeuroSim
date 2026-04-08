@@ -4,8 +4,8 @@
   <img src="https://img.shields.io/badge/GSoC-2026-orange?style=for-the-badge&logo=google" alt="GSoC 2026" />
   <img src="https://img.shields.io/badge/INCF-EBRAINS-%23005596?style=for-the-badge" alt="INCF EBRAINS" />
   <img src="https://img.shields.io/badge/Python-3.9%2B-blue?style=for-the-badge&logo=python" alt="Python" />
-  <img src="https://img.shields.io/badge/License-MIT-green?style=for-the-badge" alt="MIT License" />
-  <img src="https://img.shields.io/badge/Physics--First-Network_Control_Theory-8B00FF?style=for-the-badge" alt="Physics-First" />
+  <img src="https://img.shields.io/badge/License-Apache2.0-green?style=for-the-badge" alt="MIT License" />
+  <img src="https://img.shields.io/badge/Physics--Constrained-Network_Control_Theory-8B00FF?style=for-the-badge" alt="Physics-Constrained" />
 </p>
 
 **GSoC 2026 / INCF Project #39 — National Brain Research Centre (NBRC) & EBRAINS**  
