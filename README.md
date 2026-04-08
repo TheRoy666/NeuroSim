@@ -9,7 +9,7 @@
 </p>
 
 **GSoC 2026 / INCF Project #39 — National Brain Research Centre (NBRC) & EBRAINS**  
-**Automating In-Silico Stimulation for Non-Invasive Biomarker Discovery**
+**NeuroSim: A Physics Constrained Model for Finite Horizon Network Control Theory**
 
 **Mentor:** Dr. Khushbu Agarwal  
 **Contributor:** Ritam Kanti Roy
