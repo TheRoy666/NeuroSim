@@ -6,11 +6,11 @@
 >  It is a discrete, finite, energetically constrained machine -  
 >  and our models should say the same."*
 
-[![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
+[![Python 3.9+](https://img.shields.io/badge/python-3.9+-red.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
-[![GSoC 2026](https://img.shields.io/badge/GSoC-2026%20INCF-orange.svg)](https://summerofcode.withgoogle.com/)
+[![GSoC 2026](https://img.shields.io/badge/GSoC-2026%20-orange.svg)](https://summerofcode.withgoogle.com/)
 [![iNCF](https://img.shields.io/badge/Project-iNCF%20GSoC%202026-blue)](https://neurostars.org/t/gsoc-2026-project-39-national-brain-research-centre-nbrc-ebrains-neurosim-automating-in-silico-stimulation-for-non-invasive-biomarker-discovery/35619/10/)
-[![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#running-tests)
+[![Tests](https://img.shields.io/badge/Tests-Pass-brightgreen.svg)](#running-tests)
 [![CI](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml/badge.svg)](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml)
 
 ---
