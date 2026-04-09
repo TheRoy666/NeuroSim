@@ -203,18 +203,34 @@ cd neurosim
 
 # Install in development mode
 pip install -e ".[dev]"
+pip install -r requirements.txt
 
 # Run the full test suite
 pytest tests/ -v
 
 # Expected output:
-# PASSED tests/test_physics.py::test_normalise_spectral_radius
+# PASSED tests/test_physics.py::test_normalise_target_rho
+# PASSED tests/test_physics.py::test_normalise_works_on_unstable_matrix
+# PASSED tests/test_physics.py::test_normalise_raises_on_degenerate
 # PASSED tests/test_physics.py::test_gramian_positive_semidefinite
+# PASSED tests/test_physics.py::test_gramian_symmetric
+# PASSED tests/test_physics.py::test_gramian_psd_small_system
 # PASSED tests/test_physics.py::test_doubling_matches_naive
+# PASSED tests/test_physics.py::test_trivial_transition_zero_energy
 # PASSED tests/test_physics.py::test_minimum_energy_nonnegative
+# PASSED tests/test_physics.py::test_gramian_raises_on_unstable
+# PASSED tests/test_physics.py::test_controllability_shapes
+# PASSED tests/test_physics.py::test_doubling_speedup
+
 # PASSED tests/test_connectivity.py::test_fc_is_symmetric
 # PASSED tests/test_connectivity.py::test_ec_recovers_causal_direction
 # PASSED tests/test_connectivity.py::test_teleportation_error
+# Passed tests/test_connectivity.py::test_effective_connectivity_is_directed
+# Passed tests/test_connectivity.py::test_graph_laplacian_positive_semidefinite
+# Passed tests/test_connectivity.py::test_graph_laplacian_row_sum_zero
+# Passed tests/test_connectivity.py::test_graphnet_structural_bias
+# Passed tests/test_connectivity.py::test_effective_connectivity_graphnet_is_directed
+# Passed tests/test_connectivity.py::test_graphnet_structural_penalty
 ```
 
 ---
