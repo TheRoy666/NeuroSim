@@ -11,12 +11,12 @@ Background
 ----------
 Standard NCT pipelines solve the continuous algebraic Lyapunov equation::
 
-    A W + W A^T + B B^T = 0   →   W_∞
+    A W + W A^T + B B^T = 0   ->   W_∞
 
-This assumes T → ∞, producing a "vanishing cost" problem: in any stable system,
+This assumes T -> ∞, producing a "vanishing cost" problem: in any stable system,
 the energy required to reach any reachable state collapses to zero as time grows
-unbounded. For clinical neuroscience — where we care about state transitions on
-the order of cognitive task windows (2–10 s) — this is biologically indefensible.
+unbounded. For clinical neuroscience - where we care about state transitions on
+the order of cognitive task windows (2–10 s) - this is biologically indefensible.
 
 NeuroSim enforces a finite horizon T. The brain is modelled as a Discrete-Time
 Linear Time-Invariant (DT-LTI) system::
@@ -27,8 +27,8 @@ The Reachability Gramian over horizon T is the matrix sum::
 
     W_T = Σ_{k=0}^{T-1}  A^k B B^T (A^T)^k
 
-Naiive computation costs O(T . N³). The Doubling Algorithm reduces this to
-O(log T · N³) by iterative squaring::
+Naive computation costs O(T . N³). The Doubling Algorithm reduces this to
+O(log T . N³) by iterative squaring::
 
     Φ_0 = A,   Ψ_0 = B B^T
     Φ_{j+1} = Φ_j²
@@ -55,66 +55,49 @@ from numpy.typing import NDArray
 from scipy.linalg import eigvals, solve_discrete_lyapunov
 
 
+# Spectral normalisation
+
 def normalise_matrix(
     A: NDArray,
     target_rho: float = 0.9,
 ) -> NDArray:
-    """Normalise adjacency matrix so its spectral radius < 1.
+    """Normalise adjacency matrix so its spectral radius equals target_rho.
 
-    A stable DT-LTI system requires ρ(A) < 1. Two strategies:
-
-    * ``"spectral"``  - divide by (ρ(A) + δ), where δ = 0.01.
-      Preserves directional asymmetry. Preferred for Effective Connectivity.
-    * ``"trace"``     - divide by Tr(A) + 1.
-      Cruder, suitable when A is ill-conditioned.
+    A stable DT-LTI system requires ρ(A) < 1. This function rescales A so
+    that ρ(A_norm) = target_rho exactly, preserving the directional
+    asymmetry of the matrix (eigenvalue ratios are unchanged).
 
     Parameters
     ----------
     A : (N, N) array-like
-        Raw connectivity matrix (structural or effective).
+        Raw connectivity matrix (structural or effective). May be unstable.
     target_rho : float
         Desired spectral radius after normalisation (default 0.9).
-    method : {"spectral", "trace"}
-        Normalisation strategy.
 
     Returns
     -------
     A_norm : (N, N) ndarray
-        Normalised connectivity matrix with ρ(A_norm) = target_rho.
+        Rescaled matrix with ρ(A_norm) = target_rho.
+
+    Raises
+    ------
+    ValueError
+        If the matrix has a near-zero spectral radius (degenerate input).
+
+    Notes
+    -----
+    The stability guard (ρ ≥ 1 check) belongs in ``compute_gramian_doubling``,
+    not here. ``normalise_matrix`` is designed to *fix* unstable matrices.
     """
     A = np.asarray(A, dtype=float)
-    B = np.asarray(B, dtype=float)
-    N = A.shape[0]
-
-    # Guardrail: system must be stable
     rho = np.max(np.abs(eigvals(A)))
-    if rho >= 1.0:
+    if rho < 1e-12:
         raise ValueError(
-            f"System is unstable (spectral radius ρ = {rho:.4f} ≥ 1). "
-            "Call normalise_matrix() first."
+            f"Matrix has near-zero spectral radius (ρ = {rho:.2e}). "
+            "Check your input - the matrix may be all-zeros or degenerate."
         )
+    return A * (target_rho / rho)
 
-    # Initialise
-    Phi = A.copy()           # Φ_j = A^(2^j)
-    Psi = B @ B.T            # Current Gramian block
-    W = np.zeros((N, N))     # Accumulated Gramian
-    Phi_acc = np.eye(N)      # Accumulated state transition
-
-    t = T
-    while t > 0:
-        if t % 2 == 1:       # Current bit is set
-            W += Phi_acc @ Psi @ Phi_acc.T
-            Phi_acc = Phi_acc @ Phi
-
-        # Double the block
-        Psi = Psi + Phi @ Psi @ Phi.T
-        Phi = Phi @ Phi
-
-        t //= 2
-
-    # Enforce symmetry
-    W = 0.5 * (W + W.T)
-    return W
 
 # Van Loan Doubling Algorithm
 
@@ -129,7 +112,7 @@ def compute_gramian_doubling(
 
         W_T = Σ_{k=0}^{T-1} A^k B B^T (A^T)^k
 
-    in O(log T · N³) rather than O(T · N³).
+    in O(log T . N³) rather than O(T . N³).
 
     Parameters
     ----------
@@ -148,12 +131,7 @@ def compute_gramian_doubling(
     Raises
     ------
     ValueError
-        If ρ(A) ≥ 1 (unstable system).
-
-    Notes
-    -----
-    The doubling loop handles non-power-of-2 horizons by decomposing T in
-    binary and accumulating partial sums, analogous to fast exponentiation.
+        If ρ(A) ≥ 1 (unstable system). Call ``normalise_matrix()`` first.
     """
     A = np.asarray(A, dtype=float)
     B = np.asarray(B, dtype=float)
@@ -166,36 +144,26 @@ def compute_gramian_doubling(
             "System is unstable. Call normalise_matrix() first."
         )
 
-    # Seed values
-    Phi = A.copy()          # Φ_j = A^{2^j}
-    Q0  = B @ B.T           # base BBᵀ
-    Psi = Q0.copy()         # accumulated Gramian
-
-    # Binary decomposition of T for O(log T) accumulation
-    W = np.zeros((N, N))
-    Phi_acc = np.eye(N)     # tracks A^{bits accumulated so far}
-    t = T
+    # Binary-decomposition doubling
+    W       = np.zeros((N, N))
+    Phi_acc = np.eye(N)      # A^{accumulated bits}
+    Phi_j   = A.copy()       # A^{2^j}
+    Q_j     = B @ B.T        # BBᵀ doubled at each step
 
     iters = math.ceil(math.log2(T)) + 1 if T > 1 else 1
-    Phi_j = A.copy()
-    Q_j   = Q0.copy()
+    t = T
 
-    for j in range(iters):
-        if t & 1:  # binary bit is set
-            W += Phi_acc @ Q_j @ Phi_acc.T
+    for _ in range(iters):
+        if t & 1:
+            W      += Phi_acc @ Q_j @ Phi_acc.T
             Phi_acc = Phi_acc @ Phi_j
-
-        # Double
         Q_j   = Q_j + Phi_j @ Q_j @ Phi_j.T
         Phi_j = Phi_j @ Phi_j
-
         t >>= 1
         if t == 0:
             break
 
-    # Symmetrise
-    W = (W + W.T) / 2.0
-    return W
+    return (W + W.T) / 2.0
 
 
 # Minimum-Energy Control
@@ -215,31 +183,24 @@ def minimum_energy(
 
         E* = (xT - A^T x0)^T  W_T^{-1}  (xT - A^T x0)
 
-    where W_T is the Finite-Horizon Reachability Gramian.
-
     Parameters
     ----------
     A  : (N, N) ndarray - normalised connectivity matrix.
     B  : (N, M) ndarray - input matrix.
-    x0 : (N,) ndarray  - initial brain state (e.g., resting-state BOLD).
-    xT : (N,) ndarray  - target brain state (e.g., task-evoked BOLD).
+    x0 : (N,) ndarray  - initial brain state.
+    xT : (N,) ndarray  - target brain state.
     T  : int           - finite horizon (TR steps).
     rcond : float      - pseudo-inverse cutoff for ill-conditioned Gramians.
 
     Returns
     -------
-    energy : float
-        Scalar minimum control energy E*.
-    u_opt : (N,) ndarray
-        Optimal control input at t=0 (first time step).
+    energy : float       - Scalar minimum control energy E*.
+    u_opt  : (N,) ndarray - Optimal first-step control input.
     """
-    W_T = compute_gramian_doubling(A, B, T)
-
-    # Free evolution term
-    A_T = np.linalg.matrix_power(A, T)
+    W_T   = compute_gramian_doubling(A, B, T)
+    A_T   = np.linalg.matrix_power(A, T)
     delta = xT - A_T @ x0
 
-    # Condition monitoring
     cond = np.linalg.cond(W_T)
     if cond > 1e12:
         warnings.warn(
@@ -248,9 +209,9 @@ def minimum_energy(
             RuntimeWarning,
         )
 
-    W_inv = np.linalg.pinv(W_T, rcond=rcond)
+    W_inv  = np.linalg.pinv(W_T, rcond=rcond)
     energy = float(delta @ W_inv @ delta)
-    u_opt = B.T @ W_inv @ delta   # optimal first-step control
+    u_opt  = B.T @ W_inv @ delta
 
     return energy, u_opt
 
@@ -260,15 +221,9 @@ def minimum_energy(
 def average_controllability(A: NDArray) -> NDArray:
     """Trace of the infinite-horizon Gramian per node (Gu et al., 2015).
 
-    While NeuroSim's primary engine uses finite-horizon physics, average
-    controllability (via the infinite-horizon Gramian) remains useful as a
-    *network topology* descriptor, capturing how easily a node can steer the
-    system to a broad range of states.
-
     Returns
     -------
-    ac : (N,) ndarray
-        Average controllability for each node (diagonal of W_∞).
+    ac : (N,) ndarray - Average controllability for each node.
     """
     A = np.asarray(A, dtype=float)
     N = A.shape[0]
@@ -279,19 +234,14 @@ def average_controllability(A: NDArray) -> NDArray:
 def modal_controllability(A: NDArray) -> NDArray:
     """Modal controllability per node (Gu et al., 2015).
 
-    Quantifies the ability of each node to steer the system into difficult-
-    to-reach (low-energy) modes. Nodes with high modal controllability can
-    push the system into states that require large control energy.
-
     Returns
     -------
-    mc : (N,) ndarray
-        Modal controllability for each node.
+    mc : (N,) ndarray - Modal controllability for each node.
     """
     A = np.asarray(A, dtype=float)
     eigenvalues, V = np.linalg.eig(A)
     mc = np.array([
-        np.sum((1 - np.abs(eigenvalues)**2) * (np.abs(V[i, :])**2))
+        np.sum((1 - np.abs(eigenvalues) ** 2) * (np.abs(V[i, :]) ** 2))
         for i in range(A.shape[0])
     ])
     return mc.real
