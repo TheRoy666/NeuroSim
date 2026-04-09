@@ -1,6 +1,5 @@
 name: NeuroSim CI Validation
 
-# Trigger the workflow on push or pull request to the main branches
 on:
   push:
     branches: [ "main", "master" ]
@@ -11,8 +10,7 @@ jobs:
   build-and-test:
     name: Biophysics Integration Tests
     runs-on: ubuntu-latest
-    
-    # A matrix build proves you understand cross-environment stability
+  
     strategy:
       matrix:
         python-version: ["3.10", "3.11"]
@@ -25,13 +23,15 @@ jobs:
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip' # Speeds up subsequent runs
+        cache: 'pip'
 
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
+        # Install the core scientific stack required for NeuroSim
         pip install pytest numpy scipy statsmodels scikit-learn nilearn
-        pip install -e .  # <--- This installs your neurosim package into the runner
+        # Fallback to requirements.txt if present
+        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
     - name: Execute Mathematical & Biological Assertions
       run: |
