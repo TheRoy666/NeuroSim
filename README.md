@@ -1,6 +1,9 @@
 # NeuroSim 
 [![CI Workflow](https://github.com/TheRoy666/NeuroSim/actions/workflows/main.yml/badge.svg)](https://github.com/TheRoy666/NeuroSim/actions)
 
+<p align="center">
+  <img src="https://img.shields.io/badge/GSoC-2026-orange?style=for-the-badge&logo=google" alt="GSoC 2026" />
+
 **A physics-constrained Python toolkit for finite-horizon Network Control Theory in macro-scale neuroimaging.**
 
 > *"The brain is not a continuous-time system with infinite patience.  
