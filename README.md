@@ -1,8 +1,4 @@
 # NeuroSim 
-[![CI Workflow](https://github.com/TheRoy666/NeuroSim/actions/workflows/main.yml/badge.svg)](https://github.com/TheRoy666/NeuroSim/actions)
-
-<p align="center">
-  <img src="https://img.shields.io/badge/GSoC-2026-orange?style=for-the-badge&logo=google" alt="GSoC 2026" />
 
 **A physics-constrained Python toolkit for finite-horizon Network Control Theory in macro-scale neuroimaging.**
 
@@ -15,6 +11,7 @@
 [![GSoC 2026](https://img.shields.io/badge/GSoC-2026%20INCF-orange.svg)](https://summerofcode.withgoogle.com/)
 [![iNCF](https://img.shields.io/badge/Project-iNCF%20GSoC%202026-blue)](https://neurostars.org/t/gsoc-2026-project-39-national-brain-research-centre-nbrc-ebrains-neurosim-automating-in-silico-stimulation-for-non-invasive-biomarker-discovery/35619/10/)
 [![Tests](https://img.shields.io/badge/tests-passing-brightgreen.svg)](#running-tests)
+[![CI](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml/badge.svg)](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml)
 
 ---
 
