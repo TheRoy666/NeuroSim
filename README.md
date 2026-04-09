@@ -23,7 +23,7 @@ The application of Network Control Theory (NCT) to neuroimaging has produced pro
 Standard NCT pipelines compute the **Infinite-Horizon Controllability Gramian** W∞, which satisfies the algebraic Lyapunov equation:
 
 ```
-A W∞ + W∞ Aᵀ + BBᵀ = 0
+AW(∞) + W(∞)Aᵀ + BBᵀ = 0
 ```
 
 This metric assumes the brain has *unlimited time* to transition between states. In a stable system (ρ(A) < 1), the energy to reach any state approaches **zero** as T -> ∞ - the "vanishing cost" problem. A schizophrenic patient who can *theoretically* engage executive control *given infinite time* is indistinguishable from a healthy control. The infinite-horizon Gramian is blind to this clinically critical impairment.
@@ -58,7 +58,7 @@ x[k+1] = A x[k] + B u[k]
 and computes the **Finite-Horizon Reachability Gramian**:
 
 ```
-W_T = Σ_{k=0}^{T-1}  Aᵏ BBᵀ (Aᵀ)ᵏ
+W at time T = Σ Aᵏ BBᵀ (Aᵀ)ᵏ [Summation is done from k=0 to k=(T-1)]
 ```
 
 This T-parameterised metric directly captures the energetic cost of transitioning states *within a cognitive task window*. Naïve computation costs O(T·N³). NeuroSim implements the **Van Loan Doubling Algorithm**, which reduces complexity to **O(log T · N³)** via iterative squaring:
@@ -97,7 +97,7 @@ EC = graphnet_effective_connectivity(
 NeuroSim enforces a **controls-only harmonisation** protocol:
 
 ```python
-from neurosim.harmonize import BlindHarmonizer
+from neurosim.harmonize import BlindHarmonizer #Yet to be implemented, postBIDS work
 
 harmonizer = BlindHarmonizer(biological_covariates=["age", "sex"])
 harmonizer.fit(X_controls, site_controls)          
@@ -114,7 +114,7 @@ Any group difference surviving blind harmonisation is a genuine biological signa
 neurosim/
 │
 ├── neurosim/
-│   ├── __init__.py          # Public API facade
+│   ├── __init__.py          # Public API
 │   ├── physics.py           #  Van Loan Doubling Algorithm, Gramian engine
 │   ├── connectivity.py      #  GraphNet EC solver, FC vs EC comparison
 │   ├── harmonize.py         #  Blind harmonisation (controls-only ComBat)
@@ -126,7 +126,7 @@ neurosim/
 │
 ├── notebooks/
 │   └── 01_fc_vs_ec_validation.ipynb   # Interactive FC vs EC comparison
-│
+│    
 └── pyproject.toml
 ```
 
