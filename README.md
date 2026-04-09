@@ -21,13 +21,13 @@ The application of Network Control Theory (NCT) to neuroimaging has produced pro
 
 ### Error 1 - Temporal Approximation (Infinite Horizon)
 
-Standard NCT pipelines compute the **Infinite-Horizon Controllability Gramian** W∞, which satisfies the algebraic Lyapunov equation:
+Standard NCT pipelines compute the **Infinite-Horizon Controllability Gramian** W(∞), which satisfies the algebraic Lyapunov equation:
 
 ```
 AW(∞) + W(∞)Aᵀ + BBᵀ = 0
 ```
 
-This metric assumes the brain has *unlimited time* to transition between states. In a stable system (ρ(A) < 1), the energy to reach any state approaches **zero** as T -> ∞ - the "vanishing cost" problem. A schizophrenic patient who can *theoretically* engage executive control *given infinite time* is indistinguishable from a healthy control. The infinite-horizon Gramian is blind to this clinically critical impairment.
+This metric assumes the brain has *unlimited time* to transition between states. In a stable system (ρ(A) < 1), the energy to reach any state approaches **zero** as T -> ∞ - the 'vanishing cost' problem. A schizophrenic patient who can *theoretically* engage executive control *given infinite time* is indistinguishable from a healthy control. The infinite-horizon Gramian is blind to this clinically critical impairment.
 
 **Biologically, cognitive switching occurs in 2–10 seconds. The time horizon T is not a free parameter - it is a physiological constant.**
 
