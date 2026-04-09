@@ -1,0 +1,49 @@
+name: NeuroSim CI
+
+on:
+  push:
+    branches: [ main, dev ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.9", "3.10", "3.11"]
+
+    steps:
+    - uses: actions/checkout@v4
+
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+
+    - name: Install dependencies
+      run: |
+        python -m pip install --upgrade pip
+        pip install -e ".[dev]"
+
+    - name: Run tests with coverage
+      run: |
+        pytest tests/ -v --tb=short --cov=neurosim --cov-report=term-missing
+
+    - name: Validate physics engine (doubling accuracy)
+      run: |
+        python -c "
+        import numpy as np
+        from neurosim.physics import normalise_matrix, compute_gramian_doubling
+        A = normalise_matrix(np.random.default_rng(0).normal(0,1,(10,10)), 0.9)
+        B = np.eye(10)
+        def naive(A,B,T):
+            W=np.zeros_like(A); Ak=np.eye(len(A)); Q=B@B.T
+            for _ in range(T): W+=Ak@Q@Ak.T; Ak=Ak@A
+            return W
+        for T in [4, 16, 64]:
+            err = np.max(np.abs(naive(A,B,T) - compute_gramian_doubling(A,B,T)))
+            assert err < 1e-8, f'T={T}: error={err}'
+            print(f'  T={T}: max|ΔW| = {err:.2e} ✓')
+        print('Doubling algorithm validated.')
+        "
