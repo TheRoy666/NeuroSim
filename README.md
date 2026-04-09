@@ -1,4 +1,5 @@
 # NeuroSim 
+[![CI Workflow](https://github.com/TheRoy666/NeuroSim/actions/workflows/main.yml/badge.svg)](https://github.com/TheRoy666/NeuroSim/actions)
 
 **A physics-constrained Python toolkit for finite-horizon Network Control Theory in macro-scale neuroimaging.**
 
