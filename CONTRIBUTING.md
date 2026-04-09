@@ -9,6 +9,7 @@ as part of GSoC 2026 under the INCF mentorship program.
 git clone https://github.com/TheRoy666/neurosim
 cd neurosim
 pip install -e ".[dev]"
+pip install -r requirements.txt
 ```
 
 ## Running Tests
