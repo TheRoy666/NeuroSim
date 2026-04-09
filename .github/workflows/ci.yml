@@ -30,10 +30,8 @@ jobs:
     - name: Install Dependencies
       run: |
         python -m pip install --upgrade pip
-        # Install the core scientific stack required for NeuroSim
         pip install pytest numpy scipy statsmodels scikit-learn nilearn
-        # Fallback to requirements.txt if present
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install -e .  # <--- This installs your neurosim package into the runner
 
     - name: Execute Mathematical & Biological Assertions
       # The -v flag provides verbose output so admins can see exactly what passed
