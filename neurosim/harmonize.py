@@ -1,12 +1,14 @@
 """
 neurosim.harmonize
 ==================
-Blind multi-site harmonisation to prevent data leakage. Provides a Reference-Group-only Empirical Bayes implementation to prevent 
+Blind multi-site harmonisation to prevent data leakage.
+
+Provides a Reference-Group-only Empirical Bayes implementation to prevent
 diagnostic circularity (data leakage) in multi-site cohorts.
 
-TODO (GSoC Week 2): Wrap the official `neuroCombat` Python package to 
-handle edge cases (missing covariates, small N batches) while strictly 
-enforcing this Reference-Group logic.****
+TODO (GSoC Week 2): Wrap the official `neuroCombat` Python package to
+handle edge cases (missing covariates, small N batches) while strictly
+enforcing this Reference-Group logic.
 
 The Statistical Leakage Crisis
 -------------------------------
@@ -74,24 +76,23 @@ def detect_site_effects(
 
     Parameters
     ----------
-    X              : (N_subjects, N_features) ndarray - Feature matrix.
-    site_labels    : sequence of length N_subjects      - Site identifier per subject.
-    alpha          : float - Significance threshold (default 0.05).
-    n_features_check : int - Number of features to sample for the ANOVA.
+    X                : (N_subjects, N_features) ndarray - Feature matrix.
+    site_labels      : sequence of length N_subjects    - Site identifier per subject.
+    alpha            : float - Significance threshold (default 0.05).
+    n_features_check : int   - Number of features to sample for the ANOVA.
 
     Returns
     -------
     result : dict with keys:
-        ``"n_significant"``   - Number of features with p < alpha.
-        ``"fraction_sig"``    - Proportion significant.
+        ``"fraction_sig"``        - Proportion of features significant at alpha.
         ``"recommend_harmonise"`` - True if >5% features are significant.
-        ``"mean_F"``          - Mean F-statistic across sampled features.
     """
     X = np.asarray(X, dtype=float)
     sites = np.asarray(site_labels)
     unique_sites = np.unique(sites)
 
-   if len(unique_sites) < 2:
+
+    if len(unique_sites) < 2:
         return {"recommend_harmonise": False, "note": "Only one site detected."}
 
     n_features = X.shape[1]
@@ -105,15 +106,15 @@ def detect_site_effects(
         p_values.append(p)
 
     p_values = np.array(p_values)
-    frac_sig = (p_values < alpha).mean()
+    frac_sig = float((p_values < alpha).mean())
 
     return {
-        "fraction_sig": float(frac_sig),
+        "fraction_sig": frac_sig,
         "recommend_harmonise": frac_sig > 0.05,
-    } 
+    }
 
 
-# BlindHarmonizer (controls-only ComBat-style Empirical Bayes based)
+# BlindHarmonizer (controls-only Empirical Bayes)
 
 class BlindHarmonizer:
     """Blind harmonisation: fit on controls, apply to all subjects.
@@ -123,41 +124,26 @@ class BlindHarmonizer:
     data, then applies those estimates to all subjects - preventing diagnostic
     leakage.
 
-    Parameters
-    ----------
-    biological_covariates : list of str, optional
-        Column names in the covariate DataFrame to preserve (e.g., Age, Sex).
-        **Must NOT include diagnostic group labels.**
-
-    Attributes
-    ----------
-    site_means_   : dict - Per-site, per-feature additive effect estimates.
-    site_vars_    : dict - Per-site, per-feature multiplicative effect estimates.
-    grand_mean_   : ndarray - Feature-wise grand mean estimated from controls.
-    is_fitted_    : bool - Whether the model has been fitted.
-
     Examples
     --------
-    >>> harmonizer = BlindHarmonizer(biological_covariates=["age", "sex"])
+    >>> harmonizer = BlindHarmonizer()
     >>> harmonizer.fit(X_controls, site_controls)
     >>> X_harmonised = harmonizer.transform(X_all, site_all)
     """
 
-    def __init__(self):
+    def __init__(self) -> None:
         self.grand_mean_: Optional[NDArray] = None
         self.site_means_: Dict = {}
-        self.site_vars_: Dict = {}
-        self.is_fitted_ = False
+        self.site_vars_:  Dict = {}
+        self.is_fitted_   = False
 
     def fit(self, X_controls: NDArray, site_controls: Sequence) -> "BlindHarmonizer":
         """Estimate site effects from healthy control data only.
 
         Parameters
         ----------
-        X_controls   : (N_ctrl, F) ndarray - Feature matrix, controls only.
+        X_controls    : (N_ctrl, F) ndarray - Feature matrix, controls only.
         site_controls : sequence of length N_ctrl - Site labels for controls.
-        covariates_df : DataFrame, optional - Biological covariates for controls.
-                        Must NOT contain diagnostic columns.
 
         Returns
         -------
@@ -173,7 +159,7 @@ class BlindHarmonizer:
             mask = sites == site
             X_site = X_centred[mask]
             self.site_means_[site] = X_site.mean(axis=0)
-            self.site_vars_[site] = np.maximum(X_site.var(axis=0), 1e-6)
+            self.site_vars_[site]  = np.maximum(X_site.var(axis=0), 1e-6)
 
         self.is_fitted_ = True
         return self
@@ -197,42 +183,25 @@ class BlindHarmonizer:
         sites = np.asarray(site_all)
         X_centred = X - self.grand_mean_
 
-        for site in np.unique(sites):
-            if site not in self.site_means_:
-                continue
-            mask = sites == site
-            mu_s = self.site_means_[site]
-            var_s = self.site_vars_[site]
-            grand_var = np.var(
-                np.concatenate([X_centred[sites == s] - self.site_means_[s]
-                                for s in self.site_means_], axis=0),
-                axis=0
-            )
-            grand_var = np.maximum(grand_var, 1e-6)
-
-            X_centred[mask] = (X_centred[mask] - mu_s) * np.sqrt(grand_var / var_s)
-
-        return X_centred + self.grand_mean_
+        # Compute grand variance from controls (pooled across sites)
+        pooled_residuals = np.concatenate([
+            X_centred[sites == s] - self.site_means_[s]
+            for s in self.site_means_
+            if s in np.unique(sites)
+        ], axis=0)
+        grand_var = np.maximum(np.var(pooled_residuals, axis=0), 1e-6)
 
         for site in np.unique(sites):
             if site not in self.site_means_:
+                warnings.warn(
+                    f"Site '{site}' was not seen during fit. No correction applied.",
+                    RuntimeWarning, stacklevel=2,
+                )
                 continue
-            mask = sites == site
+            mask  = sites == site
             mu_s  = self.site_means_[site]
             var_s = self.site_vars_[site]
-            grand_var = np.var(
-                np.concatenate([
-                    (X_centred[sites == s] - self.site_means_[s])
-                    for s in self.site_means_
-                ], axis=0),
-                axis=0,
-            )
-            grand_var = np.maximum(grand_var, 1e-6)
-
-            # Empirical Bayes correction: subtract site mean, rescale variance
-            X_centred[mask] = (
-                (X_centred[mask] - mu_s) * np.sqrt(grand_var / var_s)
-            )
+            X_centred[mask] = (X_centred[mask] - mu_s) * np.sqrt(grand_var / var_s)
 
         return X_centred + self.grand_mean_
 
@@ -242,7 +211,11 @@ class BlindHarmonizer:
         site_controls: Sequence,
         X_all: NDArray,
         site_all: Sequence,
-        covariates_df: Optional[pd.DataFrame] = None,
     ) -> NDArray:
-        """Fit on controls and transform all subjects in one call."""
-        return self.fit(X_controls, site_controls, covariates_df).transform(X_all, site_all)
+        """Fit on controls and transform all subjects in one call.
+
+        Note: ``covariates_df`` has been removed from this signature.
+        Biological covariate regression is a planned GSoC Week 2 addition
+        once the neuroCombat wrapper is integrated.
+        """
+        return self.fit(X_controls, site_controls).transform(X_all, site_all)
