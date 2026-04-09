@@ -112,23 +112,29 @@ Any group difference surviving blind harmonisation is a genuine biological signa
 ## Architecture
 
 ```
-neurosim/
-│
-├── neurosim/
-│   ├── __init__.py          # Public API
-│   ├── physics.py           #  Van Loan Doubling Algorithm, Gramian engine
-│   ├── connectivity.py      #  GraphNet EC solver, FC vs EC comparison
-│   ├── harmonize.py         #  Blind harmonisation (controls-only ComBat)
-│   └── simulation.py        #  Wilson-Cowan neural mass benchmarking
-│
-├── tests/
-│   ├── test_physics.py      # Engineering verification: PSD, stability, speedup
-│   └── test_connectivity.py # Teleportation Error demo, Laplacian checks
-│
-├── notebooks/
-│   └── 01_fc_vs_ec_validation.ipynb   # Interactive FC vs EC comparison
-│    
-└── pyproject.toml
+NeuroSim/
+├── .github/
+│   └── workflows/
+│       └── ci.yml             # Continuous Integration pipeline (GitHub Actions)
+├── neurosim/                  # Core library package
+│   ├── __init__.py            # Package initialization and API exposure
+│   ├── connectivity.py        # Effective/Functional connectivity solvers
+│   ├── harmonize.py           # Multi-site data harmonization (Blind neuroCombat)
+│   ├── physics.py             # Control engine (Van Loan Doubling, Gramians)
+│   └── simulation.py          # Wilson-Cowan neural mass modeling
+├── notebook/                  # Documentation and walkthroughs
+│   ├── 01_fc_vs_ec_validation.ipynb
+│   ├── validation_figure.png
+│   └── validation_pipeline.py # Functional companion script for the notebook
+├── tests/                     # Unit and integration tests
+│   ├── test_connectivity.py
+│   └── test_physics.py
+├── .gitignore                 # Specifies intentionally untracked files to ignore
+├── CONTRIBUTING.md            # Guidelines for contributing to the project
+├── LICENSE                    # Project license (Apache 2.0)
+├── README.md                  # Main project documentation
+├── pyproject.toml             # Build system requirements and metadata
+└── requirements.txt           # List of Python dependencies
 ```
 
 ### Module Overview
