@@ -34,6 +34,5 @@ jobs:
         pip install -e .  # <--- This installs your neurosim package into the runner
 
     - name: Execute Mathematical & Biological Assertions
-      # The -v flag provides verbose output so admins can see exactly what passed
       run: |
-        pytest -v tests/
+        PYTHONPATH=. pytest -v tests/
