@@ -1,41 +1,37 @@
-name: NeuroSim CI Validation
+name: NeuroSim CI
 
-# Trigger the workflow on push or pull request to the main branches
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ main, master ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ main, master ]
 
 jobs:
-  build-and-test:
-    name: Biophysics Integration Tests
+  test:
     runs-on: ubuntu-latest
-    
-    # A matrix build proves you understand cross-environment stability
-    strategy:
-      matrix:
-        python-version: ["3.10", "3.11"]
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+      - name: Checkout repository
+        uses: actions/checkout@v4
 
-    - name: Set up Python ${{ matrix.python-version }}
-      uses: actions/setup-python@v5
-      with:
-        python-version: ${{ matrix.python-version }}
-        cache: 'pip' # Speeds up subsequent runs
+      - name: Set up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
 
-    - name: Install Dependencies
-      run: |
-        python -m pip install --upgrade pip
-        # Install the core scientific stack required for NeuroSim
-        pip install pytest numpy scipy statsmodels scikit-learn nilearn
-        # Fallback to requirements.txt if present
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -e .
+          pip install pytest
 
-    - name: Execute Mathematical & Biological Assertions
-      # The -v flag provides verbose output so admins can see exactly what passed
-      run: |
-        pytest -v test_physics.py test_connectivity.py
+      - name: Run physics tests
+        run: python -m pytest tests/test_physics.py -q --tb=no
+
+      - name: Run connectivity tests
+        run: python -m pytest tests/test_connectivity.py -q --tb=no
+
+      - name: Run quick validation scripts
+        run: |
+          python quick_test.py
+          python quick_connectivity_test.py
