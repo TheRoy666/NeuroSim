@@ -282,8 +282,7 @@ energy_lti, _ = minimum_energy(A, B, x0, xT, T=E_bold.shape[1])
 ## Author
 
 **Ritam Kanti Roy**  
-MSc Biotechnology, Jadavpur University  
-Dissertation Intern, National Brain Research Centre (NBRC), Manesar
+MSc Biotechnology, Jadavpur University
 
 *GSoC 2026 Proposal: INCF Project #39 - NeuroSim: A Physics-Constrained Model for Finite Horizon Network Control Theory*
 
