@@ -42,7 +42,7 @@ The result: a "structurally blind" model with false-zero entries that corrupt co
 
 ### Error 3 - Statistical Leakage (Non-Blind Harmonisation)
 
-Multi-site neuroimaging studies routinely use ComBat harmonisation with diagnostic group as a covariate - to "preserve" biological variance. This introduces **data leakage**: the harmonisation algorithm encodes group-level differences into the corrected features *before* the classifier sees them, inflating AUC and creating irreproducible biomarkers.
+Multi-site neuroimaging studies routinely use ComBat harmonisation with diagnostic group as a covariate - to preserve biological variance. This introduces **data leakage**: the harmonisation algorithm encodes group-level differences into the corrected features *before* the classifier sees them, inflating AUC and creating irreproducible biomarkers.
 
 ---
 
