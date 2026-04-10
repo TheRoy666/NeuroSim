@@ -76,9 +76,9 @@ W_T = compute_gramian_doubling(A, B, T=10)    # 10 TR steps ≈ 7.2 s
 
 NeuroSim replaces hard DTI masking with the **GraphNet** objective (Grosenick et al., 2013):
 
-```
-min_A  ‖X_{t+1} - A X_t‖²_F  +  λ₁‖A‖²_F  +  λ₂ Tr(Aᵀ L_sc A)
-```
+
+$$\min_{A} \|X_{t+1} - A X_t\|^2_F + \lambda_1 \|A\|^2_F + \lambda_2 \text{Tr}(A^T L_{sc} A)$$
+
 
 where L_sc is the Graph Laplacian of the structural connectome. This penalises functional deviations from structural topology *without hard-zeroing any connection*. Connections absent from DTI are penalised - not forbidden.
 
