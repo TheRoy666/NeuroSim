@@ -197,7 +197,7 @@ EC = ridge_effective_connectivity(X)   # asymmetric -> correctly identifies Node
 # EC[0,1] ≈ 0.02  (no reverse causation, correct)
 ```
 
-FC-based NCT assigns similar "controllability" to all nodes in the chain, because symmetric matrices by definition cannot encode causal asymmetry. EC-based NCT correctly flags Node 0 as the dominant driver - equivalent to identifying a **Seizure Onset Zone** in epilepsy or a **dysregulated hub** in addiction.
+FC-based NCT assigns similar controllability to all nodes in the chain, because symmetric matrices by definition cannot encode causal asymmetry. EC-based NCT correctly flags Node 0 as the dominant driver - equivalent to identifying a **Seizure Onset Zone** in epilepsy or a **dysregulated hub** in addiction.
 
 ---
 
