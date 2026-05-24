@@ -29,7 +29,7 @@ jobs:
       run: |
         python -m pip install --upgrade pip
         # Install the core scientific stack required for NeuroSim
-        pip install pytest numpy scipy statsmodels scikit-learn nilearn
+        pip install pytest numpy scipy statsmodels scikit-learn nilearn nibabel
         # Fallback to requirements.txt if present
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
 
