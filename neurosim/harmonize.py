@@ -183,20 +183,28 @@ class BlindHarmonizer:
         sites = np.asarray(site_all)
         X_centred = X - self.grand_mean_
 
-        # Compute grand variance from controls (pooled across sites)
-        pooled_residuals = np.concatenate([
-            X_centred[sites == s] - self.site_means_[s]
-            for s in self.site_means_
-            if s in np.unique(sites)
-        ], axis=0)
-        grand_var = np.maximum(np.var(pooled_residuals, axis=0), 1e-6)
-
-        for site in np.unique(sites):
+        # Warn about unseen sites first (before building residuals)
+        unique_sites = np.unique(sites)
+        for site in unique_sites:
             if site not in self.site_means_:
                 warnings.warn(
                     f"Site '{site}' was not seen during fit. No correction applied.",
-                    RuntimeWarning, stacklevel=2,
+                    UserWarning, stacklevel=2,
                 )
+
+        # Compute grand variance from controls (pooled across known sites)
+        known_present = [s for s in self.site_means_ if s in unique_sites]
+        if not known_present:
+            return X_centred + self.grand_mean_
+
+        pooled_residuals = np.concatenate([
+            X_centred[sites == s] - self.site_means_[s]
+            for s in known_present
+        ], axis=0)
+        grand_var = np.maximum(np.var(pooled_residuals, axis=0), 1e-6)
+
+        for site in unique_sites:
+            if site not in self.site_means_:
                 continue
             mask  = sites == site
             mu_s  = self.site_means_[site]
@@ -212,5 +220,10 @@ class BlindHarmonizer:
         X_all: NDArray,
         site_all: Sequence,
     ) -> NDArray:
-        """Fit on controls and transform all subjects in one call."""
+        """Fit on controls and transform all subjects in one call.
+
+        Note: ``covariates_df`` has been removed from this signature.
+        Biological covariate regression is a planned GSoC Week 2 addition
+        once the neuroCombat wrapper is integrated.
+        """
         return self.fit(X_controls, site_controls).transform(X_all, site_all)
