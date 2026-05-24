@@ -184,6 +184,7 @@ class TestLoadConnectome:
         assert np.allclose(np.diag(loaded), 0.0)
 
 
+
 # Atlas registry validation (no download required)
 
 class TestAtlasRegistry:
@@ -197,7 +198,7 @@ class TestAtlasRegistry:
     def test_schaefer_invalid_n_rois_raises(self):
         from neurosim.loader import load_atlas, SCHAEFER_N_ROIS
         bad_n = 999  # not in SCHAEFER_N_ROIS
-        # Only raises if nilearn is available — skip gracefully if not
+        pytest.importorskip("nibabel", reason="nibabel not installed")
         pytest.importorskip("nilearn", reason="nilearn not installed")
         with pytest.raises(ValueError, match="Schaefer"):
             load_atlas("schaefer400", n_rois=bad_n)
