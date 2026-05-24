@@ -205,12 +205,12 @@ class BlindHarmonizer:
 
         return X_centred + self.grand_mean_
 
-    def fit_transform(
-       self,
-       X_controls: NDArray,
-       site_controls: Sequence,
-       X_all: NDArray,
-       site_all: Sequence,
-   ) -> NDArray:
+       def fit_transform(
+          self,
+          X_controls: NDArray,
+          site_controls: Sequence,
+          X_all: NDArray,
+          site_all: Sequence,
+      ) -> NDArray:
     """Fit on controls and transform all subjects in one call."""
-    return self.fit(X_controls, site_controls).transform(X_all, site_all)
+       return self.fit(X_controls, site_controls).transform(X_all, site_all)
