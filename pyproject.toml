@@ -35,6 +35,16 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
+neuroimaging = [
+  "nibabel>=4.0",
+  "nilearn>=0.10",
+  "pybids>=0.16",
+  "joblib>=1.2",
+]
+viz = [
+  "umap-learn>=0.5",
+  "seaborn>=0.12",
+]
 dev = [
   "pytest>=7.0",
   "pytest-cov",
@@ -48,11 +58,19 @@ notebooks = [
   "seaborn>=0.12",
   "umap-learn>=0.5",
 ]
+all = [
+  "nibabel>=4.0",
+  "nilearn>=0.10",
+  "pybids>=0.16",
+  "joblib>=1.2",
+  "umap-learn>=0.5",
+  "seaborn>=0.12",
+]
 
 [project.urls]
-Homepage    = "https://github.com/TheRoy666/neurosim"
-Repository  = "https://github.com/TheRoy666/neurosim"
-Issues      = "https://github.com/TheRoy666/neurosim/issues"
+Homepage    = "https://github.com/TheRoy666/NeuroSim"
+Repository  = "https://github.com/TheRoy666/NeuroSim"
+Issues      = "https://github.com/TheRoy666/NeuroSim/issues"
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
