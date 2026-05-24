@@ -24,23 +24,33 @@ def _require_nibabel():
     except ImportError: raise ImportError("NiBabel required: pip install nibabel")
 
 def _require_nilearn():
-    try: import nilearn; return nilearn
-    except ImportError: raise ImportError("Nilearn required: pip install nilearn")
+    try:
+        import nilearn
+        import nilearn.datasets   # submodule must be explicitly imported
+        return nilearn
+    except ImportError:
+        raise ImportError("Nilearn required: pip install nilearn")
 
 def _require_pybids():
     try: import bids; return bids
     except ImportError: raise ImportError("PyBIDS required: pip install pybids")
 
 def load_atlas(atlas, n_rois=None, resolution_mm=2):
+    # Validate name FIRST — before importing heavy optional deps
+    atlas_str = str(atlas)
+    if not Path(atlas_str).exists():
+        key = atlas_str.lower().replace("-","").replace("_","")
+        if key not in ATLAS_NAMES:
+            raise ValueError(f"Unknown atlas '{atlas_str}'. Choose from: {list(ATLAS_NAMES.keys())}")
+
     nib = _require_nibabel()
     nilearn_datasets = _require_nilearn().datasets
-    if Path(str(atlas)).exists():
-        atlas_img = nib.load(str(atlas))
+
+    if Path(atlas_str).exists():
+        atlas_img = nib.load(atlas_str)
         n = int(atlas_img.get_fdata().max())
         return atlas_img, np.array([f"Region_{i}" for i in range(1, n+1)])
-    key = str(atlas).lower().replace("-","").replace("_","")
-    if key not in ATLAS_NAMES:
-        raise ValueError(f"Unknown atlas '{atlas}'. Choose from: {list(ATLAS_NAMES.keys())}")
+    key = atlas_str.lower().replace("-","").replace("_","")
     family, default_n = ATLAS_NAMES[key]
     n_rois = n_rois or default_n
     if family == "schaefer":
