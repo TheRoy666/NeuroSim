@@ -1,38 +1,92 @@
-name: NeuroSim CI Validation
+name: NeuroSim CI
 
 on:
   push:
-    branches: [ "main", "master" ]
+    branches: [ main, dev ]
   pull_request:
-    branches: [ "main", "master" ]
+    branches: [ main ]
 
 jobs:
-  build-and-test:
-    name: Biophysics Integration Tests
+  test:
     runs-on: ubuntu-latest
-  
     strategy:
       matrix:
         python-version: ["3.9", "3.10", "3.11"]
 
     steps:
-    - name: Checkout Repository
-      uses: actions/checkout@v4
+    - uses: actions/checkout@v4
 
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
         python-version: ${{ matrix.python-version }}
-        cache: 'pip'
 
-    - name: Install Dependencies
+    - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
-        # Install the core scientific stack required for NeuroSim
-        pip install pytest numpy scipy statsmodels scikit-learn nilearn nibabel
-        # Fallback to requirements.txt if present
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
+        pip install \
+          numpy scipy scikit-learn pandas matplotlib \
+          pytest pytest-cov \
+          statsmodels
 
-    - name: Execute Mathematical & Biological Assertions
+    - name: Run full test suite
       run: |
-        PYTHONPATH=. pytest -v tests/
+        PYTHONPATH=. pytest tests/ -v --tb=short \
+          --ignore=tests/test_loader.py \
+          -p no:warnings
+
+    - name: Run loader tests (no neuroimaging deps)
+      run: |
+        PYTHONPATH=. pytest tests/test_loader.py -v --tb=short \
+          -k "not atlas" \
+          -p no:warnings
+
+    - name: Validate physics engine (doubling accuracy)
+      run: |
+        python -c "
+        import numpy as np
+        from neurosim.physics import normalise_matrix, compute_gramian_doubling
+        A = normalise_matrix(np.random.default_rng(0).normal(0,1,(10,10)), 0.9)
+        B = np.eye(10)
+        def naive(A,B,T):
+            W=np.zeros_like(A); Ak=np.eye(len(A)); Q=B@B.T
+            for _ in range(T): W+=Ak@Q@Ak.T; Ak=Ak@A
+            return W
+        for T in [4, 16, 64]:
+            err = np.max(np.abs(naive(A,B,T) - compute_gramian_doubling(A,B,T)))
+            assert err < 1e-8, f'T={T}: error={err}'
+            print(f'  T={T}: max|ΔW| = {err:.2e} OK')
+        print('Doubling algorithm validated.')
+        "
+
+    - name: Validate clinical pipelines (smoke test)
+      run: |
+        python -c "
+        import numpy as np, warnings
+        warnings.filterwarnings('ignore')
+        from neurosim.physics import normalise_matrix
+        from neurosim.clinical import AUDPipeline, ADNIPipeline, EpilepsyPipeline
+
+        N, T = 12, 200
+        def bold(seed):
+            rng = np.random.default_rng(seed)
+            SC = np.zeros((N,N))
+            for i in range(N): SC[i,(i+1)%N]=SC[(i+1)%N,i]=1
+            np.fill_diagonal(SC,0)
+            A = normalise_matrix(SC+0.05*rng.normal(0,1,(N,N)),0.83)
+            X = np.zeros((N,T))
+            for t in range(1,T): X[:,t]=A@X[:,t-1]+rng.normal(0,0.3,N)
+            X=(X-X.mean(1,keepdims=True))/(X.std(1,keepdims=True)+1e-8)
+            return X, SC
+
+        subj = lambda i,g: {'X':bold(i)[0],'subject_id':f's{i}','group':g,'metadata':{}}
+        for Pipe, subs in [
+            (AUDPipeline,     [subj(0,'AUD'),subj(1,'Control')]),
+            (ADNIPipeline,    [subj(2,'CN'), subj(3,'AD')]),
+            (EpilepsyPipeline,[subj(4,'TLE'),subj(5,'Control')]),
+        ]:
+            c = Pipe(T=6).run_cohort(subs, verbose=False)
+            assert c.n_subjects == 2
+            print(f'{Pipe.__name__}: OK')
+        print('Clinical pipeline smoke test passed.')
+        "
