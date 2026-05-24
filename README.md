@@ -98,7 +98,7 @@ EC = graphnet_effective_connectivity(
 NeuroSim enforces a **controls-only harmonisation** protocol:
 
 ```python
-from neurosim.harmonize import BlindHarmonizer #Yet to be implemented, postBIDS work
+from neurosim.harmonize import BlindHarmonizer
 
 harmonizer = BlindHarmonizer(biological_covariates=["age", "sex"])
 harmonizer.fit(X_controls, site_controls)          
@@ -197,7 +197,12 @@ EC = ridge_effective_connectivity(X)   # asymmetric -> correctly identifies Node
 # EC[0,1] ≈ 0.02  (no reverse causation, correct)
 ```
 
-FC-based NCT assigns similar controllability to all nodes in the chain, because symmetric matrices by definition cannot encode causal asymmetry. EC-based NCT correctly flags Node 0 as the dominant driver - equivalent to identifying a **Seizure Onset Zone** in epilepsy or a **dysregulated hub** in addiction.
+FC-based NCT assigns near-identical controllability to all nodes — the symmetric
+matrix cannot encode causal direction. EC-based NCT reveals the causal hierarchy:
+the downstream receiver accumulates compounded path weights and becomes dramatically
+more reachable (1064× ratio vs FC's 1.6×). This correctly identifies the *topology*
+of the network, which is what matters clinically — equivalent to mapping the
+propagation hierarchy in a seizure network or the reward circuit in AUD.
 
 ---
 
@@ -290,6 +295,8 @@ energy_lti, _ = minimum_energy(A, B, x0, xT, T=E_bold.shape[1])
 
 **Ritam Kanti Roy**  
 MSc Biotechnology, Jadavpur University
+
+Mentor: **Dr. Khushbu Agarwal**, Computational Neuroscience Lab, NBRC 
 
 *GSoC 2026 Proposal: INCF Project #39 - NeuroSim: A Physics-Constrained Model for Finite Horizon Network Control Theory*
 
