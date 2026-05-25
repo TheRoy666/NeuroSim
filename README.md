@@ -36,6 +36,7 @@ This metric assumes the brain has *unlimited time* to transition between states.
 Existing tools apply DTI tractography as a hard binary mask: if no streamline connects Region A to Region B, A[i,j] = 0. This ignores:
 
 - **Polysynaptic pathways**: functional influence propagates A->C->B even without a direct A-B tract.
+- 
 - **False negatives**: probabilistic tractography systematically underestimates crossing fibres and long-range connections.
 
 The result: a "structurally blind" model with false-zero entries that corrupt control energy estimates.
