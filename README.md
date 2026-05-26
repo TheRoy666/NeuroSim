@@ -290,7 +290,7 @@ soz  = pipe.identify_soz(result, top_k=5)
 | Cohort | Hypothesis | Primary metric |
 |--------|-----------|----------------|
 | **AUD** (HCP S1200 twins) | Reward circuit locked in craving attractor | ΔE* (AUD − Control), craving→rest |
-| **ADNI** (Alzheimer's) | Finite-horizon E* tracks disease stage better than W∞ | Stage trajectory: CN→MCI→AD |
+| **Alzheimer's** (ADNI) | Finite-horizon E* tracks disease stage better than W∞ | Stage trajectory: CN→MCI→AD |
 | **Epilepsy** (TLE) | Facilitator nodes lower the ictal energy barrier | Per-node E* → SOZ ranking |
 
 ---
