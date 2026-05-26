@@ -1,49 +1,107 @@
 # Contributing to NeuroSim
 
-Thank you for your interest in contributing to NeuroSim! This project is developed
-as part of GSoC 2026 under the INCF mentorship program.
+Thank you for your interest in NeuroSim. This project is developed as part of
+GSoC 2026 under INCF mentorship at the National Brain Research Centre (NBRC).
+
+> **External contributions are welcome from July 2026 onwards**, once the GSoC
+> core architecture is stable. Until then, the codebase is under active
+> development. Please do not open unsolicited PRs against `main`.
+
+---
+
+## Before You Contribute
+
+Open a discussion first. Do not open a PR cold.
+
+**GitHub Discussions** is the right place for all pre-contribution conversation:
+https://github.com/TheRoy666/NeuroSim/discussions
+
+- **Bug reports / questions** → Q&A category
+- **Feature proposals / collaboration** → Ideas category
+- **Showing work built on NeuroSim** → Show and tell category
+
+Wait for a response from the maintainer before writing any code.
+
+---
 
 ## Development Setup
 
 ```bash
-git clone https://github.com/TheRoy666/neurosim
-cd neurosim
+git clone https://github.com/TheRoy666/NeuroSim
+cd NeuroSim
+
+# Core only
 pip install -e ".[dev]"
-pip install -r requirements.txt
+
+# With neuroimaging data loading
+pip install -e ".[neuroimaging]"
+
+# Everything
+pip install -e ".[all]"
 ```
+
+---
 
 ## Running Tests
 
 ```bash
-pytest tests/ -v --tb=short
+# Full suite (141 tests)
+PYTHONPATH=. pytest tests/ -v --tb=short
+
+# Single module
+pytest tests/test_physics.py -v
 ```
 
-## Code Style
+CI runs on Python 3.9, 3.10, and 3.11. All tests must pass before a PR
+will be reviewed.
 
-We use `black` for formatting and `isort` for import ordering:
+---
+
+## Code Style
 
 ```bash
 black neurosim/ tests/
 isort neurosim/ tests/
 ```
 
-## Mathematical Contributions
+---
 
-NeuroSim is a mathematically rigorous library. Any new algorithm must be accompanied by:
+## Standards for New Contributions
 
-1. **Docstring with full mathematical derivation** (equations in NumPy/LaTeX notation).
-2. **Unit tests** verifying correctness against a known reference implementation.
-3. **Complexity annotation** — state the time and space complexity explicitly.
-4. **Reference** to the primary literature (author, year, journal).
+NeuroSim is a mathematically rigorous library. Every new algorithm must include:
+
+1. **Docstring with full mathematical derivation** — Equations in NumPy/LaTeX
+   notation, not prose descriptions.
+2. **Unit tests** — Correctness verified against a known reference
+   implementation. Minimum coverage: shape, dtype, boundary conditions,
+   and at least one scientific property (e.g. PSD, symmetry, non-negativity).
+3. **Complexity annotation** — State time and space complexity explicitly in
+   the docstring.
+4. **Literature reference** — Author, year, journal. No algorithm without a
+   citation.
+
+---
 
 ## Reporting Bugs
 
-Please open a GitHub Issue with:
+Open a Q&A discussion at https://github.com/TheRoy666/NeuroSim/discussions
+with:
+
 - Python version and OS
 - Minimal reproducible example
 - Expected vs. actual output
 
-## Neuroscience Domain Questions
+If the bug is confirmed, the maintainer will convert it to a GitHub Issue.
 
-For questions about NCT methodology, connectomics, or clinical applications,
-open a Discussion thread with the `neuroscience` label.
+---
+
+## Maintainer and Mentor
+
+**Ritam Kanti Roy** — Maintainer
+GSoC 2026 Contributor, INCF Project #39
+
+**Dr. Khushbu Agarwal** — Mentor
+Computational Neuroscience Laboratory, NBRC
+
+All editorial decisions rest with the maintainer and mentor.
+PRs are merged at the maintainer's and mentor's discretion regardless of review status.
