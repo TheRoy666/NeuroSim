@@ -59,7 +59,8 @@ x[k+1] = A x[k] + B u[k]
 and computes the **Finite-Horizon Reachability Gramian**:
 
 ```
-W_T = Σ_{k=0}^{T-1}  Aᵏ BBᵀ (Aᵀ)ᵏ
+W(N) at T = Σ  Aᵏ BBᵀ (Aᵀ)ᵏ [from k = 0 to (N-1)]
+
 ```
 
 This T-parameterised metric directly captures the energetic cost of transitioning states *within a cognitive task window*. Naïve computation costs O(T·N³). NeuroSim implements the **Van Loan Doubling Algorithm**, which reduces this to **O(log T · N³)**:
@@ -351,7 +352,7 @@ All notebooks use synthetic data with a clearly marked one-cell swap point for r
 **Ritam Kanti Roy**
 MSc Biotechnology, Jadavpur University
 
-**Mentor:** Dr. Khushbu Agarwal
+Mentor: **Dr. Khushbu Agarwal**
 Computational Neuroscience Laboratory, NBRC
 
 *GSoC 2026 Contributor — INCF Project #39: NeuroSim: A Physics-Constrained Model for Finite Horizon Network Control Theory*
@@ -370,6 +371,4 @@ See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 Apache License 2.0. See [LICENSE](LICENSE) for details.
 
-## License
-
-Apache License 2.0. See [LICENSE](LICENSE) for details.
+---
