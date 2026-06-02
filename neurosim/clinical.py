@@ -73,7 +73,7 @@ from neurosim.connectivity import (
 from neurosim.harmonize import BlindHarmonizer, detect_site_effects
 
 
-# Result dataclasses
+# ── Result dataclasses ─────────────────────────────────────────────────────
 
 @dataclass
 class SubjectResult:
@@ -134,7 +134,7 @@ class CohortResult:
         return pd.DataFrame(rows)
 
 
-# Base pipeline
+# ── Base pipeline ──────────────────────────────────────────────────────────
 
 class BasePipeline(ABC):
     """Abstract base class for all NeuroSim clinical pipelines.
@@ -408,7 +408,7 @@ class BasePipeline(ABC):
         return stats
 
 
-# AUD Pipeline
+# ── AUD Pipeline ───────────────────────────────────────────────────────────
 
 class AUDPipeline(BasePipeline):
     """Alcohol Use Disorder NCT pipeline — discordant MZ twin design.
@@ -575,7 +575,10 @@ class AUDPipeline(BasePipeline):
             })
         return pd.DataFrame(rows)
 
-# ADNI Pipeline
+
+# ── ADNI Pipeline ──────────────────────────────────────────────────────────
+
+# ── ADNI Pipeline ──────────────────────────────────────────────────────────
 
 class ADNIPipeline(BasePipeline):
     """Alzheimer's Disease NCT pipeline — disease stage biomarker validation.
@@ -652,8 +655,8 @@ class ADNIPipeline(BasePipeline):
         self.dmn_indices = dmn_indices
 
     def define_transitions(self) -> Dict[str, Tuple[str, str]]:
-        return {
         """Return ADNI-specific state transitions: default↔memory and default↔executive."""
+        return {
             "default_to_memory":    ("default", "memory"),
             "default_to_executive": ("default", "executive"),
             "memory_to_executive":  ("memory",  "executive"),
