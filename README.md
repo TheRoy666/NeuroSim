@@ -11,7 +11,7 @@
 [![GSoC 2026](https://img.shields.io/badge/GSoC-2026%20INCF-orange.svg)](https://summerofcode.withgoogle.com/)
 [![iNCF](https://img.shields.io/badge/Project-iNCF%20GSoC%202026-blue)](https://neurostars.org/t/gsoc-2026-project-39-national-brain-research-centre-nbrc-ebrains-neurosim-automating-in-silico-stimulation-for-non-invasive-biomarker-discovery/35619/10/)
 [![Tests](https://img.shields.io/badge/Tests-141%20passing-brightgreen.svg)](#running-tests)
-[![CI](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml/badge.svg)](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml)
+[![CI](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml)
 
 ---
 
