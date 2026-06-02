@@ -6,7 +6,7 @@ Clinical validation pipelines for finite-horizon Network Control Theory.
 Three pipeline classes, each targeting a specific neurological or psychiatric
 condition where NCT has high translational potential:
 
-AUD Pipeline
+AUDPipeline
 -----------
 Alcohol Use Disorder — discordant monozygotic twin design (HCP S1200).
 Hypothesis: The reward circuit is locked in a pathological attractor state
@@ -16,7 +16,7 @@ co-twin, controlling for genetic and family environment confounds.
 
 Key metric: ΔE* = E*(AUD) - E*(Control) for the craving → rest transition.
 
-ADNI Pipeline
+ADNIPipeline
 ------------
 Alzheimer's Disease — Retrogenesis Hypothesis (ADNI dataset).
 Hypothesis: White matter degradation in AD reverses the developmental
@@ -27,7 +27,7 @@ the Retrogenesis pattern (Rosen & Bhattacharya, 2022).
 Key metric: Δ modal controllability along the retrogenesis axis, stratified
 by disease stage (MCI → early AD → late AD).
 
-Epilepsy Pipeline
+EpilepsyPipeline
 ----------------
 Temporal Lobe Epilepsy — Seizure Onset Zone identification.
 Hypothesis: Facilitator nodes in the epileptic network lower the energy
@@ -73,7 +73,7 @@ from neurosim.connectivity import (
 from neurosim.harmonize import BlindHarmonizer, detect_site_effects
 
 
-# Result dataclasses 
+# ── Result dataclasses ─────────────────────────────────────────────────────
 
 @dataclass
 class SubjectResult:
@@ -99,13 +99,16 @@ class CohortResult:
 
     @property
     def n_subjects(self) -> int:
+        """Total number of subjects in the cohort."""
         return len(self.subjects)
 
     @property
     def groups(self) -> List[str]:
+        """Sorted list of unique group labels in the cohort."""
         return sorted(set(s.group for s in self.subjects))
 
     def get_group(self, group: str) -> List[SubjectResult]:
+        """Return all SubjectResult objects belonging to a given group."""
         return [s for s in self.subjects if s.group == group]
 
     def energy_array(self, transition: str, group: Optional[str] = None) -> NDArray:
@@ -131,7 +134,7 @@ class CohortResult:
         return pd.DataFrame(rows)
 
 
-# Base pipeline 
+# ── Base pipeline ──────────────────────────────────────────────────────────
 
 class BasePipeline(ABC):
     """Abstract base class for all NeuroSim clinical pipelines.
@@ -405,7 +408,7 @@ class BasePipeline(ABC):
         return stats
 
 
-# AUD Pipeline
+# ── AUD Pipeline ───────────────────────────────────────────────────────────
 
 class AUDPipeline(BasePipeline):
     """Alcohol Use Disorder NCT pipeline — discordant MZ twin design.
@@ -452,6 +455,7 @@ class AUDPipeline(BasePipeline):
         self.craving_percentile = craving_percentile
 
     def define_transitions(self) -> Dict[str, Tuple[str, str]]:
+        """Return AUD-specific state transitions: craving↔rest and rest↔cognitive."""
         return {
             "craving_to_rest": ("craving", "rest"),
             "rest_to_cognitive": ("rest", "cognitive"),
@@ -494,6 +498,7 @@ class AUDPipeline(BasePipeline):
 
         # Normalise all states to unit norm
         def _norm(x):
+            """Normalise state vector to unit norm (standard NCT convention)."""
             return x / (np.linalg.norm(x) + 1e-8)
 
         return {
@@ -570,7 +575,10 @@ class AUDPipeline(BasePipeline):
             })
         return pd.DataFrame(rows)
 
-# ADNI Pipeline 
+
+# ── ADNI Pipeline ──────────────────────────────────────────────────────────
+
+# ── ADNI Pipeline ──────────────────────────────────────────────────────────
 
 class ADNIPipeline(BasePipeline):
     """Alzheimer's Disease NCT pipeline — disease stage biomarker validation.
@@ -648,6 +656,7 @@ class ADNIPipeline(BasePipeline):
 
     def define_transitions(self) -> Dict[str, Tuple[str, str]]:
         return {
+        """Return ADNI-specific state transitions: default↔memory and default↔executive."""
             "default_to_memory":    ("default", "memory"),
             "default_to_executive": ("default", "executive"),
             "memory_to_executive":  ("memory",  "executive"),
@@ -664,6 +673,7 @@ class ADNIPipeline(BasePipeline):
         global_signal = X.mean(axis=0)
 
         def _norm(x):
+            """Normalise state vector to unit norm (standard NCT convention)."""
             return x / (np.linalg.norm(x) + 1e-8)
 
         # Default mode: low global signal (DMN active, task-negative)
@@ -850,6 +860,7 @@ class EpilepsyPipeline(BasePipeline):
         self.compute_node_energies = True
 
     def define_transitions(self) -> Dict[str, Tuple[str, str]]:
+        """Return epilepsy-specific state transitions: interictal↔ictal and preictal→ictal."""
         return {
             "interictal_to_ictal":   ("interictal", "ictal"),
             "preictal_to_ictal":     ("preictal",   "ictal"),
@@ -866,6 +877,7 @@ class EpilepsyPipeline(BasePipeline):
         N, T = X.shape
 
         def _norm(x):
+            """Normalise state vector to unit norm (standard NCT convention)."""
             return x / (np.linalg.norm(x) + 1e-8)
 
         # Priority: explicit ictal indices from metadata or self
