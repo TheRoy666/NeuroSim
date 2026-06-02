@@ -32,10 +32,6 @@ jobs:
     - name: Run full test suite
       run: |
         PYTHONPATH=. pytest tests/ -v --tb=short -p no:warnings
-        
-    - name: Debug test_harmonize collection
-      run: |
-        PYTHONPATH=. pytest tests/test_harmonize.py -v --tb=long -p no:warnings
 
     - name: Validate physics engine (doubling accuracy)
       run: |
