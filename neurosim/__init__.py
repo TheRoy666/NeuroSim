@@ -38,16 +38,17 @@ __author__  = "Ritam Kanti Roy"
 __email__   = "rhitam2001@gmail.com"
 __license__ = "Apache-2.0"
 
-# ── Physics engine ─────────────────────────────────────────────────────────────
+# Physics engine
 from neurosim.physics import (
     normalise_matrix,
     compute_gramian_doubling,
     minimum_energy,
     average_controllability,
     modal_controllability,
+    finite_vs_infinite_comparison,
 )
 
-# ── Connectivity estimation ────────────────────────────────────────────────────
+# Connectivity estimation
 from neurosim.connectivity import (
     functional_connectivity,
     ridge_effective_connectivity,
@@ -56,19 +57,19 @@ from neurosim.connectivity import (
     simulate_feedforward_network,
 )
 
-# ── Harmonisation ──────────────────────────────────────────────────────────────
+# Harmonisation
 from neurosim.harmonize import (
     BlindHarmonizer,
     detect_site_effects,
 )
 
-# ── Neural mass simulation ─────────────────────────────────────────────────────
+# Neural mass simulation
 from neurosim.simulation import (
     WilsonCowanNode,
     WilsonCowanNetwork,
 )
 
-# ── Clinical pipelines (core — no optional deps required) ─────────────────────
+# Clinical pipelines (core — no optional deps required)
 from neurosim.clinical import (
     AUDPipeline,
     ADNIPipeline,
@@ -77,7 +78,7 @@ from neurosim.clinical import (
     CohortResult,
 )
 
-# ── Data loading (optional — requires pip install neurosim[neuroimaging]) ──────
+# Data loading (optional — requires pip install neurosim[neuroimaging])
 try:
     from neurosim.loader import (
         BIDSLoader,
@@ -90,7 +91,7 @@ try:
 except ImportError:
     _loader_available = False
 
-# ── Visualisation (optional — requires matplotlib) ────────────────────────────
+# Visualisation
 try:
     from neurosim.plot import (
         set_style,
@@ -109,11 +110,12 @@ try:
 except ImportError:
     _plot_available = False
 
-# ── Public API ─────────────────────────────────────────────────────────────────
+# Public API 
 __all__ = [
     # Physics
     "normalise_matrix", "compute_gramian_doubling", "minimum_energy",
     "average_controllability", "modal_controllability",
+    "finite_vs_infinite_comparison",
     # Connectivity
     "functional_connectivity", "ridge_effective_connectivity",
     "graphnet_effective_connectivity", "graph_laplacian",
