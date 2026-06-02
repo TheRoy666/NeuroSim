@@ -48,7 +48,7 @@ from __future__ import annotations
 
 import math
 import warnings
-from typing import Tuple
+from typing import List, Optional, Tuple
 
 import numpy as np
 from numpy.typing import NDArray
@@ -245,3 +245,71 @@ def modal_controllability(A: NDArray) -> NDArray:
         for i in range(A.shape[0])
     ])
     return mc.real
+
+
+def finite_vs_infinite_comparison(
+    A: NDArray,
+    B: NDArray,
+    x0: NDArray,
+    xT: NDArray,
+    T_range: Optional[List[int]] = None,
+) -> "pd.DataFrame":
+    """Compare finite-horizon vs infinite-horizon control energy.
+
+    This is the core NeuroSim claim made concrete: as T grows, the
+    infinite-horizon approximation collapses to zero (the vanishing cost
+    problem), while the finite-horizon metric remains clinically sensitive.
+
+    The ratio E_finite(T) / E_infinite quantifies how much signal the
+    infinite-horizon metric discards at each cognitive timescale.
+
+    Parameters
+    ----------
+    A       : (N, N) normalised connectivity matrix (ρ(A) < 1).
+    B       : (N, M) input matrix.
+    x0      : (N,) initial brain state (unit-normalised recommended).
+    xT      : (N,) target brain state (unit-normalised recommended).
+    T_range : List of horizon values to sweep. Default: 1–20.
+
+    Returns
+    -------
+    df : DataFrame with columns T, E_finite, E_infinite, ratio.
+         ratio = E_finite / E_infinite. At short T, ratio >> 1.
+         As T → ∞, ratio → 1 (both collapse toward zero).
+
+    References
+    ----------
+    Srivastava et al. (2020) PLOS Comp. Biol. — Eq. 11, Section III.C.
+    Gu et al. (2015) Nature Communications — vanishing cost discussion.
+    """
+    import pandas as pd
+    from scipy.linalg import solve_discrete_lyapunov
+
+    if T_range is None:
+        T_range = list(range(1, 21))
+
+    N  = A.shape[0]
+    B_ = np.asarray(B, dtype=float)
+
+    # Infinite-horizon Gramian W∞ via discrete Lyapunov equation
+    # W∞ = A W∞ Aᵀ + BBᵀ  →  solve_discrete_lyapunov(A, BBᵀ)
+    W_inf     = solve_discrete_lyapunov(A, B_ @ B_.T)
+    W_inf_inv = np.linalg.pinv(W_inf)
+
+    # Use large T to approximate A^T x0 → 0 for well-damped A
+    T_large   = max(T_range) + 50
+    A_T_large = np.linalg.matrix_power(A, T_large)
+    delta_inf = xT - A_T_large @ x0
+    e_inf     = float(delta_inf @ W_inf_inv @ delta_inf)
+
+    rows = []
+    for T in T_range:
+        e_fin, _ = minimum_energy(A, B_, x0, xT, T=T)
+        rows.append({
+            "T":          T,
+            "E_finite":   e_fin,
+            "E_infinite": e_inf,
+            "ratio":      e_fin / (e_inf + 1e-12),
+        })
+
+    return pd.DataFrame(rows)
