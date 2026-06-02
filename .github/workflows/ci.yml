@@ -31,15 +31,7 @@ jobs:
 
     - name: Run full test suite
       run: |
-        PYTHONPATH=. pytest tests/ -v --tb=short \
-          --ignore=tests/test_loader.py \
-          -p no:warnings
-
-    - name: Run loader tests (no neuroimaging deps)
-      run: |
-        PYTHONPATH=. pytest tests/test_loader.py -v --tb=short \
-          -k "not atlas" \
-          -p no:warnings
+        PYTHONPATH=. pytest tests/ -v --tb=short -p no:warnings
 
     - name: Validate physics engine (doubling accuracy)
       run: |
@@ -66,7 +58,6 @@ jobs:
         warnings.filterwarnings('ignore')
         from neurosim.physics import normalise_matrix
         from neurosim.clinical import AUDPipeline, ADNIPipeline, EpilepsyPipeline
-
         N, T = 12, 200
         def bold(seed):
             rng = np.random.default_rng(seed)
@@ -78,7 +69,6 @@ jobs:
             for t in range(1,T): X[:,t]=A@X[:,t-1]+rng.normal(0,0.3,N)
             X=(X-X.mean(1,keepdims=True))/(X.std(1,keepdims=True)+1e-8)
             return X, SC
-
         subj = lambda i,g: {'X':bold(i)[0],'subject_id':f's{i}','group':g,'metadata':{}}
         for Pipe, subs in [
             (AUDPipeline,     [subj(0,'AUD'),subj(1,'Control')]),
