@@ -3,7 +3,7 @@
 Thank you for your interest in NeuroSim. This project is developed as part of
 GSoC 2026 under INCF mentorship at the National Brain Research Centre (NBRC).
 
-> **External contributions are welcome from July 2026 onwards**, once the GSoC
+> **External contributions are welcome from 20th July 2026 onwards**, once the GSoC
 > core architecture is stable. Until then, the codebase is under active
 > development. Please do not open unsolicited PRs against `main`.
 
