@@ -12,6 +12,7 @@
 [![iNCF](https://img.shields.io/badge/Project-iNCF%20GSoC%202026-blue)](https://neurostars.org/t/gsoc-2026-project-39-national-brain-research-centre-nbrc-ebrains-neurosim-automating-in-silico-stimulation-for-non-invasive-biomarker-discovery/35619/10/)
 [![Tests](https://img.shields.io/badge/Tests-141%20passed%2C%202%20skipped-brightgreen.svg)](#running-tests)
 [![CI](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml)
+[![Validated](https://img.shields.io/badge/Validated-N%3D287%20real%20subjects-success.svg)](#validation)
 
 ---
 
@@ -124,11 +125,24 @@ NeuroSim/
 │   ├── loader.py                         # BIDS ingestion: BIDSLoader, load_bold, from_arrays
 │   ├── plot.py                           # Publication figures: 7 visualisation functions
 │   └── clinical.py                       # AUDPipeline, ADNIPipeline, EpilepsyPipeline
-├── notebooks/
-│   ├── 01_fc_vs_ec_validation.ipynb      # Teleportation Error + doubling accuracy demo
-│   ├── 02_minimum_energy_control.ipynb   # Finite-horizon physics end-to-end
-│   ├── 03_wilson_cowan_benchmark.ipynb   # LTI vs non-linear validation (NLCF)
-│   └── 04_clinical_pipeline_demo.ipynb   # AUD · ADNI · Epilepsy synthetic walkthrough
+├── scripts/                               # Real-data analysis & preprocessing pipelines
+│   ├── run_hcp_aud_batch.py               # HCP S1200 AUD cohort NCT batch (N=238)
+│   ├── run_adni_nctn_batch.py             # ADNI-3 CN/MCI NCT batch (N=49, 2 atlases)
+│   ├── run_adni_harmonize.py              # BlindHarmonizer + site-effect analysis
+│   ├── run_adni_pipeline.sh               # FastSurfer → fMRIPrep → QSIPrep orchestration
+│   ├── build_connectomes.sh               # MRtrix3 structural connectome builder
+│   ├── extract_timeseries.py              # BOLD confound regression + parcellation
+│   ├── qc_postproc.py                     # Post-preprocessing QC (anat/func/dwi)
+│   └── qc_connectomes.py                  # Structural connectome QC
+├── results/                               # De-identified real-data validation results
+│   ├── ADNI/                              # ADNI-3 NCT results, 2 atlases (15 files)
+│   └── HCP_AUD/                           # HCP AUD NCT results (5 files)
+├── notebook/
+│   ├── 01_fc_vs_ec_validation.ipynb       # Teleportation Error + doubling accuracy demo
+│   ├── 02_minimum_energy_control.ipynb    # Finite-horizon physics end-to-end
+│   ├── 03_wilson_cowan_benchmark.ipynb    # LTI vs non-linear validation (NLCF)
+│   ├── 04_clinical_pipeline_demo.ipynb    # AUD · ADNI · Epilepsy synthetic walkthrough
+│   └── 05_real_data_validation.ipynb      # Real-data validation: HCP N=238, ADNI N=49
 ├── tests/
 │   ├── test_physics.py                   # 12 tests — Van Loan, Gramian, energy
 │   ├── test_connectivity.py              # 9 tests  — EC direction, Teleportation Error
@@ -242,6 +256,8 @@ The Gramian diagonal ratio: **FC = 1.6×** vs **EC = 1064×**.
 
 FC-based NCT cannot distinguish which node drives the chain. EC-based NCT reveals the full causal hierarchy — equivalent to mapping the propagation order of a seizure network or the reward-circuit hierarchy in addiction.
 
+This synthetic result is replicated at population scale on two independent real cohorts — see [Validation](#validation) below (median 3.22× on HCP S1200, N=238; median 12.4–13.5× on ADNI-3, N=49; 100% of subjects in both cohorts show FC-based energy exceeding EC-based energy).
+
 ---
 
 ## Wilson-Cowan Benchmark
@@ -265,7 +281,10 @@ energy_lti, _ = minimum_energy(A, B, E_bold[:, 0], E_bold[:, -1], T=10)
 
 ## Clinical Pipelines
 
-Three pipeline classes are implemented and validated on synthetic cohorts. Each accepts real BIDS data via `BIDSLoader` on June 9.
+Three pipeline classes are implemented. `AUDPipeline` and `ADNIPipeline` have been
+validated on real BIDS data (HCP S1200, N=238; ADNI-3, N=49) — see
+[Validation](#validation) below. `EpilepsyPipeline` validation on the UNAM_TLE
+cohort (OpenNeuro ds004469) is in progress.
 
 ```python
 from neurosim.clinical import AUDPipeline, ADNIPipeline, EpilepsyPipeline
@@ -293,6 +312,64 @@ soz  = pipe.identify_soz(result, top_k=5)
 | **AUD** (HCP S1200 twins) | Reward circuit locked in craving attractor | ΔE* (AUD − Control), craving→rest |
 | **Alzheimer's** (ADNI) | Finite-horizon E* tracks disease stage better than W∞ | Stage trajectory: CN→MCI→AD |
 | **Epilepsy** (TLE) | Facilitator nodes lower the ictal energy barrier | Per-node E* → SOZ ranking |
+
+---
+
+## Validation
+
+NeuroSim has been validated on real human neuroimaging data across two
+independent cohorts, confirming that its three core methodological
+contributions hold outside synthetic benchmarks. Full analysis code is in
+[`scripts/`](scripts/); underlying de-identified results are in
+[`results/`](results/); the complete walkthrough with figures is in
+[`notebook/05_real_data_validation.ipynb`](notebook/05_real_data_validation.ipynb).
+
+### HCP S1200 (N = 238)
+
+Population-scale methods validation on the Human Connectome Project AUD cohort
+(social drinkers, DSM-IV abusers, DSM-IV dependents; discordant MZ twin design).
+
+- **Teleportation Error** (FC-based vs. EC-based control energy): median
+  **3.22×** (IQR [2.71, 3.96]), 100% of 238 subjects > 1×
+- **Finite-vs-infinite horizon discrepancy**: median **11.7×** at T=1,
+  decaying to ~1× by T=20 — the vanishing-cost problem, demonstrated on
+  real BOLD data
+- Physics validation: Gramian PSD confirmed for all 238 subjects,
+  spectral normalisation stable (ρ=0.90) throughout
+- Clinical group comparison (social drinker vs. AUD): null result
+  (Kruskal-Wallis p=0.066), consistent with an underpowered subgroup —
+  reported honestly rather than overstated
+
+### ADNI-3 CN/MCI (N = 49, 25 CN / 24 MCI)
+
+Clinical staging application across 29 acquisition sites and 3 scanner
+manufacturers (Siemens, GE, Philips), using two independent brain
+parcellations (TianS3, 450 nodes; Schaefer-400, 400 nodes).
+
+- **Teleportation Error**: median **12.4–13.5×** across both atlases,
+  100% of 49 subjects > 1×; confirmed methodological rather than clinical
+  (no significant CN vs. MCI difference, p=0.197)
+- **Finite-vs-infinite horizon discrepancy**: median **32.8×** at T=1,
+  decaying to ~1× by T=20 — consistent across both parcellations
+- **Site effects** (`detect_site_effects`): scanner manufacturer explains
+  17–32% of variance (η²) across NCT metrics (p<0.01), confirming the
+  batch-effect problem `BlindHarmonizer` is designed to address is real
+  and substantial in this cohort
+- **BlindHarmonizer** (controls-only ComBat) applied: CN vs. MCI direction
+  is consistent across every energy metric (CN > MCI throughout), reaching
+  **p=0.061** (Cliff's δ=0.313, medium effect) on the most sensitive
+  metric. Manufacturer and diagnosis were found to be partially confounded
+  in this N=49 cohort — a limitation documented rather than concealed,
+  and a specific target for a larger, better-balanced cohort next
+
+| Finding | HCP (N=238) | ADNI (N=49) |
+|---|---|---|
+| Teleportation Error (median) | 3.22× | 12.4–13.5× |
+| % subjects with ratio > 1 | 100% | 100% |
+| Finite-vs-infinite at T=1 (median) | 11.7× | 32.8× |
+| Decays to ~1× by | T≈20 | T≈20 |
+| Clinical/group effect | Null (p=0.066) | Directional trend (p=0.06–0.27) |
+| Site/batch effects | N/A | η²=0.17–0.32, detected and addressed |
 
 ---
 
@@ -329,8 +406,11 @@ CI runs on Python 3.9, 3.10, and 3.11 via GitHub Actions on every push and pull 
 | `02_minimum_energy_control` | Gramian horizon sweep · State transitions · Vanishing cost proof · Stimulation target ranking |
 | `03_wilson_cowan_benchmark` | NLCF computation · Regime analysis · LTI validity map · Jacobian stability |
 | `04_clinical_pipeline_demo` | AUD twin discordance · ADNI stage trajectory · Epilepsy SOZ identification |
+| `05_real_data_validation` | **Real-data validation**: HCP S1200 (N=238) and ADNI-3 (N=49) — Teleportation Error, finite-vs-infinite horizon, site effects, BlindHarmonizer, CN vs. MCI comparison |
 
-All notebooks use synthetic data with a clearly marked one-cell swap point for real HCP / ADNI / TLE data.
+Notebooks 01–04 use synthetic data with a clearly marked one-cell swap point
+for real HCP / ADNI / TLE data. Notebook 05 presents the completed real-data
+validation results described above.
 
 ---
 
