@@ -1,0 +1,18 @@
+# Shell scripts must always use LF — CRLF breaks the shebang and script
+# execution on Linux (the R740 and any other Unix deployment target).
+*.sh text eol=lf
+
+# Python files: normalize to LF as well for consistency across platforms.
+*.py text eol=lf
+
+# Windows-specific scripts, if any are ever added, keep CRLF.
+*.bat text eol=crlf
+*.ps1 text eol=crlf
+
+# Binary files — do not touch line endings at all.
+*.png binary
+*.npy binary
+*.pdf binary
+*.h5 binary
+*.nii binary
+*.nii.gz binary
