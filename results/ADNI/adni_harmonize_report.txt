@@ -1,0 +1,23 @@
+NeuroSim ADNI — BlindHarmonizer Report
+==================================================
+Manufacturer batch effects detected and corrected
+using controls-only ComBat (CN subjects, N=25).
+
+
+Atlas: tians3
+------------------------------
+  E_rest_to_demand      : p 0.234→0.453  → unchanged  [null]
+  E_demand_to_rest      : p 0.184→0.258  → unchanged  [null]
+  E_asymmetry           : p 0.596→0.555  ↓ p improved  [null]
+  teleport_ratio        : p 0.197→0.234  → unchanged  [null]
+  avg_ctrl_mean         : p 0.219→0.136  ↓ p improved  [null]
+  mod_ctrl_mean         : p 0.757→0.881  → unchanged  [null]
+
+Atlas: schaefer400
+------------------------------
+  E_rest_to_demand      : p 0.267→0.465  → unchanged  [null]
+  E_demand_to_rest      : p 0.061→0.080  → unchanged  [TREND]
+  E_asymmetry           : p 0.418→0.682  → unchanged  [null]
+  teleport_ratio        : p 0.465→0.697  → unchanged  [null]
+  avg_ctrl_mean         : p 0.184→0.121  ↓ p improved  [null]
+  mod_ctrl_mean         : p 0.682→0.726  → unchanged  [null]
