@@ -21,8 +21,3 @@ Overall median=3.38x, IQR=[2.83, 4.24] -- close to the already-reported
 operator-divergence AUD median (3.22x), a reassuring sign the core
 operator-divergence finding is robust to this state-definition change.
 
-## Status: ONE HALF of the actual comparison
-This alone cannot answer whether real reward-network state definition
-changes anything relative to the original variance-based proxy. Needs
-the original run_hcp_aud_batch.py run on the same 238 subjects for the
-real side-by-side. Requested, not yet returned.
