@@ -343,14 +343,6 @@ real connectome density, not toy density. Rewritten around a more
 efficient data structure before it ever touched a server, not after a
 failed production run.
 
-**A missing environment-variable fix turned an 11-day compute estimate
-into four hours.** Full-cohort real-coupling sweeps were initially
-projected to take roughly 11 days for HCP alone. The actual cause was a
-missing BLAS thread-capping fix, not a hardware ceiling — once found,
-the identical computation completed in under 4.5 hours on existing lab
-hardware. No HPC access was ever required for this project's headline
-results.
-
 **Honest nulls were more valuable than a positive result would have
 been.** UNAM's lateralization null, checked directly against He et al.
 (2022)'s positive result under a different operator, became a specific,
