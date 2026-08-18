@@ -1,0 +1,6 @@
+n_boot,N,n_connections,spearman_rho_strength_vs_raw_std,p_value_raw_std,direction_matches_frassle_stephan_raw_std,spearman_rho_strength_vs_coefficient_of_variation,p_value_cv,direction_matches_frassle_stephan_cv,subject_id
+200,410,167690,0.5425010179723507,0.0,False,-0.8174128988183127,0.0,True,100610
+200,410,167690,0.5405332026629133,0.0,False,-0.8179215607051151,0.0,True,102311
+200,410,167690,0.5030377513117091,0.0,False,-0.8474138731355915,0.0,True,103818
+200,410,167690,0.5546784207092342,0.0,False,-0.8066530010833709,0.0,True,104416
+200,410,167690,0.5241412998914483,0.0,False,-0.8305207550603528,0.0,True,105115
