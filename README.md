@@ -391,7 +391,7 @@ ADNI.
 3. Wilson, H. R. & Cowan, J. D. (1972). Excitatory and inhibitory interactions in localized populations of model neurons. *Biophysical Journal*, 12(1), 1–24.
 4. Muldoon, S. F. et al. (2016). Stimulation-based control of dynamic brain networks. *PLOS Computational Biology*, 12(9), e1005076.
 5. Lindmark, G. & Altafini, C. (2018). Minimum energy control for complex networks. *Scientific Reports*, 8, 3188.
-6. Frässle, S. & Stephan, K. E. (2022). Test-retest reliability of dynamic causal modeling for fMRI. *NeuroImage*, 250, 118928.
+6. Frässle, S. & Stephan, K. E. (2022). Test-retest reliability of regression dynamic causal modeling. Network Neuroscience, 6(1), 135–160.
 7. Opsahl, T. et al. (2008). Prominence and control: the weighted rich-club effect. *Physical Review Letters*, 101(16), 168702.
 8. Maslov, S. & Sneppen, K. (2002). Specificity and stability in topology of protein networks. *Science*, 296(5569), 910–913.
 
