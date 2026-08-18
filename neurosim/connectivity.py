@@ -219,6 +219,130 @@ def graphnet_effective_connectivity(
     return A
 
 
+# Moving-block bootstrap for EC estimation uncertainty (Path B)
+
+def block_bootstrap_ec(
+    X: NDArray,
+    SC: NDArray,
+    ec_func: "callable" = None,
+    n_boot: int = 200,
+    block_length: int = 15,
+    seed: int = 0,
+    **ec_kwargs,
+) -> NDArray:
+    """Moving-block bootstrap over BOLD time series, re-estimating EC each draw.
+
+    Per Phase 0 plan (Path B): naive timepoint bootstrap is invalid for BOLD
+    because of temporal autocorrelation. This resamples contiguous blocks of
+    ``block_length`` TRs (with replacement) to preserve short-range temporal
+    structure, concatenates them back to length T, and re-estimates EC on
+    each resampled series.
+
+    Parameters
+    ----------
+    X            : (N, T) ndarray - original BOLD time series.
+    SC           : (N, N) ndarray - structural connectome (passed through
+                   to ``ec_func``, e.g. for the GraphNet Laplacian prior).
+    ec_func      : callable(X, SC, **ec_kwargs) -> (N, N) ndarray. Defaults
+                   to ``graphnet_effective_connectivity`` if not given.
+    n_boot       : int   - number of bootstrap resamples (B). Phase 0
+                   default: start at 200, check convergence of the
+                   rank-stability metric before scaling up.
+    block_length : int   - block length in TRs (Phase 0 default: 15,
+                   ≈ sqrt(T) rule of thumb for T≈197-200).
+    seed         : int   - RNG seed for reproducibility.
+    **ec_kwargs  : passed through to ec_func.
+
+    Returns
+    -------
+    EC_boot : (n_boot, N, N) ndarray - one EC estimate per resample.
+
+    Notes
+    -----
+    Compute cost is n_boot × (cost of ec_func). Benchmark on 2-3 subjects
+    before launching the full batch (Phase 0 compute-budget check).
+    """
+    if ec_func is None:
+        ec_func = graphnet_effective_connectivity
+
+    X = np.asarray(X, dtype=float)
+    N, T = X.shape
+    rng = np.random.default_rng(seed)
+
+    n_blocks = int(np.ceil(T / block_length))
+    max_start = T - block_length
+    if max_start < 0:
+        raise ValueError(
+            f"block_length ({block_length}) exceeds series length ({T})."
+        )
+
+    EC_boot = np.zeros((n_boot, N, N))
+    for b in range(n_boot):
+        starts = rng.integers(0, max_start + 1, size=n_blocks)
+        idx = np.concatenate([np.arange(s, s + block_length) for s in starts])[:T]
+        X_resampled = X[:, idx]
+        EC_boot[b] = ec_func(X_resampled, SC, **ec_kwargs)
+
+    return EC_boot
+
+
+def driver_node_rank_stability(
+    EC_boot: NDArray,
+    controllability_func: "callable",
+    top_k: int = 5,
+) -> dict:
+    """Quantify how stable identified driver-node rankings are under
+    EC-estimation uncertainty (Path B core metric).
+
+    Parameters
+    ----------
+    EC_boot : (n_boot, N, N) ndarray - from ``block_bootstrap_ec``.
+    controllability_func : callable(A) -> (N,) ndarray - e.g.
+        ``physics.average_controllability`` or ``physics.modal_controllability``.
+        Applied to each bootstrap EC (after normalisation is the caller's
+        responsibility - pass an already-appropriate A, or wrap the
+        normalisation into this callable).
+    top_k : int - size of the top-k set for Jaccard overlap.
+
+    Returns
+    -------
+    dict with:
+        "kendall_tau_mean", "kendall_tau_std" : float - Kendall's τ between
+            each bootstrap ranking and the original (first EC in EC_boot is
+            NOT special-cased; caller should pass the point-estimate ranking
+            separately if comparing bootstrap-to-original specifically).
+        "jaccard_topk_mean", "jaccard_topk_std" : float - top-k overlap
+            fraction across all pairs of bootstrap rankings.
+        "rankings" : (n_boot, N) ndarray - raw node rankings per resample
+            (argsort of controllability, descending), for further analysis.
+    """
+    from itertools import combinations
+    from scipy.stats import kendalltau
+
+    n_boot = EC_boot.shape[0]
+    N = EC_boot.shape[1]
+
+    scores = np.array([controllability_func(EC_boot[b]) for b in range(n_boot)])
+    rankings = np.argsort(-scores, axis=1)  # descending, (n_boot, N)
+
+    taus = []
+    jaccards = []
+    for i, j in combinations(range(n_boot), 2):
+        tau, _ = kendalltau(scores[i], scores[j])
+        taus.append(tau)
+        top_i = set(rankings[i, :top_k])
+        top_j = set(rankings[j, :top_k])
+        jaccards.append(len(top_i & top_j) / len(top_i | top_j))
+
+    return {
+        "kendall_tau_mean": float(np.mean(taus)),
+        "kendall_tau_std": float(np.std(taus)),
+        "jaccard_topk_mean": float(np.mean(jaccards)),
+        "jaccard_topk_std": float(np.std(jaccards)),
+        "rankings": rankings,
+    }
+
+
 # Teleportation Error Trial (FC vs EC in NCT) (v3.0 core**)
 
 def simulate_feedforward_network(
