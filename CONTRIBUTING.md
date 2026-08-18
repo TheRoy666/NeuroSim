@@ -3,9 +3,9 @@
 Thank you for your interest in NeuroSim. This project is developed as part of
 GSoC 2026 under INCF mentorship at the National Brain Research Centre (NBRC).
 
-> **External contributions are welcome from 20th July 2026 onwards**, once the GSoC
-> core architecture is stable. Until then, the codebase is under active
-> development. Please do not open unsolicited PRs against `main`.
+> **External contributions are welcome now that the GSoC 2026 coding period is
+> complete** and the core architecture is stable. Please open a discussion
+> before writing code — see below.
 
 ---
 
@@ -45,7 +45,7 @@ pip install -e ".[all]"
 ## Running Tests
 
 ```bash
-# Full suite (141 tests)
+# Full suite (212 tests, 2 skipped)
 PYTHONPATH=. pytest tests/ -v --tb=short
 
 # Single module
