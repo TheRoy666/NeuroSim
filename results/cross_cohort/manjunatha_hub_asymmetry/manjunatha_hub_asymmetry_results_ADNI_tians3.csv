@@ -1,0 +1,9 @@
+subject_id,N,top_k,spearman_rho_in_vs_out_strength,p_value,top_k_overlap_fraction,top_k_jaccard,relationship_category
+sub-002S0413,450,20,0.3853,2.26e-17,0.15,0.0811,positive_redundancy
+sub-002S4229,450,20,0.3496,2.22e-14,0.05,0.0256,positive_redundancy
+sub-002S4654,450,20,0.3369,2.08e-13,0.1,0.0526,positive_redundancy
+sub-003S1122,450,20,0.3155,7.38e-12,0.1,0.0526,positive_redundancy
+sub-006S0498,450,20,0.3796,7.11e-17,0.05,0.0256,positive_redundancy
+sub-006S0731,450,20,0.2407,2.36e-07,0.0,0.0,independent
+sub-011S4893,450,20,0.3148,8.31e-12,0.15,0.0811,positive_redundancy
+sub-013S4268,450,20,0.3589,3.95e-15,0.05,0.0256,positive_redundancy
