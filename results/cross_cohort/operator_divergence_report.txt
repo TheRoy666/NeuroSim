@@ -1,0 +1,46 @@
+OPERATOR-DIVERGENCE CROSS-COHORT ANALYSIS -- FULL REPORT
+==============================================================================
+
+1. Direction and magnitude per cohort
+          cohort   N  pct_ratio_gt1  E_fc_median  E_ec_median  teleport_ratio_median  teleport_ratio_q25  teleport_ratio_q75
+         HCP-AUD 238          100.0     0.904860     0.275236               3.222880            2.707129            3.958702
+ADNI-Schaefer400  49          100.0     0.856787     0.064631              13.496408            9.866274           16.725377
+     ADNI-TianS3  49          100.0     0.834405     0.072807              12.392191            8.722125           15.433084
+        UNAM-TLE  62          100.0     0.162410     0.002406              66.028442           51.329565           81.014198
+
+2. Correlation with Gramian conditioning
+          cohort   N  spearman_rho_gramian_cond  p_gramian_cond  spearman_rho_raw_rho  p_raw_rho
+         HCP-AUD 238                   0.585225    2.863189e-23             -0.020240   0.756083
+ADNI-Schaefer400  49                   0.595102    6.489523e-06             -0.064286   0.660779
+     ADNI-TianS3  49                   0.581020    1.202205e-05              0.021122   0.885456
+        UNAM-TLE  62                   0.688147    6.407785e-10              0.170557   0.185047
+
+3. Within-cohort clinical group differences
+
+HCP-AUD severity trend (Kruskal-Wallis):
+  groups: ['Social_Drinker', 'Dependent', 'Abuser']
+  H: 6.316276018430813
+  p: 0.04250481101032849
+  note: EXPLORATORY, uncorrected -- not pre-registered
+
+ADNI-Schaefer400 CN vs MCI (Mann-Whitney U):
+  CN_median: 13.353524468912086
+  MCI_median: 13.646520025023882
+  p: 0.4653901846017948
+
+ADNI-TianS3 CN vs MCI (Mann-Whitney U):
+  CN_median: 9.5762457877566
+  MCI_median: 13.112749746884784
+  p: 0.19705065809949573
+
+UNAM Healthy vs TLE (Mann-Whitney U):
+  Healthy_median: 66.75314365259563
+  TLE_median: 63.767632167837625
+  p: 0.7077782962773983
+
+
+Interpretation notes:
+- teleport_ratio > 1 in ~100%% of subjects across all cohorts: symmetric-FC-based energy universally overestimates relative to directed-EC-based energy.
+- Magnitude scales with DTI-anchoring quality: smallest in individually-DTI-anchored HCP-AUD, largest in UNAM-TLE (shared template, no individual DTI).
+- Correlation with gramian_cond is consistent in sign and moderate-to-strong magnitude across all four cohorts, while correlation with raw_rho is near-zero everywhere -- the conditioning link is general, not an artifact of the UNAM-specific raw_rho pinning anomaly.
+- Clinical group differences are mostly null, as expected for a methods characterization rather than a biomarker claim. The one nominal exception (AUD severity trend) is explicitly flagged as exploratory and uncorrected.
