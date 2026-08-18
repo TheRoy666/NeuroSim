@@ -105,7 +105,7 @@ prior literature rather than quietly set aside.
 
 ## GSoC 2026 Final Work Product
 
-*Everything the [GSoC Work Product Submission Guidelines](https://developers.google.com/open-source/gsoc/help/work-product) ask for, in one place, without requiring further digging.*
+*Everything the [GSoC Work Product Submission Guidelines](https://developers.google.com/open-source/gsoc/help/work-product) ask for in one place.*
 
 | | |
 |---|---|
