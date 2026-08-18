@@ -48,7 +48,7 @@ from __future__ import annotations
 
 import math
 import warnings
-from typing import List, Optional, Tuple
+from typing import Callable, List, Optional, Tuple
 
 import numpy as np
 from numpy.typing import NDArray
@@ -214,6 +214,169 @@ def minimum_energy(
     u_opt  = B.T @ W_inv @ delta
 
     return energy, u_opt
+
+
+def minimum_energy_trajectory(
+    A: NDArray,
+    B: NDArray,
+    x0: NDArray,
+    xT: NDArray,
+    T: int,
+    rcond: float = 1e-10,
+) -> Tuple[float, NDArray]:
+    """Compute the full minimum-energy control trajectory u*[0..T-1].
+
+    ``minimum_energy`` above returns only a single control vector; this
+    extends it to the full time-indexed sequence needed to actually drive
+    a system step by step (Path A1: inject into the nonlinear WC network).
+
+    For x[k+1] = A x[k] + B u[k], the minimum-norm input steering x0 to xT
+    in exactly T steps is::
+
+        u*[k] = B^T (A^T)^(T-1-k) W_T^{-1} (xT - A^T x0),   k = 0,...,T-1
+
+    which reduces to the existing ``minimum_energy`` formula at k = T-1.
+
+    Parameters
+    ----------
+    A, B, x0, xT, T, rcond : as in ``minimum_energy``.
+
+    Returns
+    -------
+    energy : float - total control energy, sum_k ||u[k]||^2 (equals the
+        scalar E* from ``minimum_energy`` up to numerical tolerance;
+        computed independently here as a consistency check).
+    U : (T, M) ndarray - u[k] as row k. Zero-order-hold each row over its
+        TR interval when injecting into a continuous-time simulator.
+    """
+    A = np.asarray(A, dtype=float)
+    B = np.asarray(B, dtype=float)
+    N = A.shape[0]
+    M = B.shape[1]
+
+    W_T = compute_gramian_doubling(A, B, T)
+    A_T = np.linalg.matrix_power(A, T)
+    delta = np.asarray(xT, dtype=float) - A_T @ np.asarray(x0, dtype=float)
+
+    cond = np.linalg.cond(W_T)
+    if cond > 1e12:
+        warnings.warn(
+            f"Gramian condition number {cond:.2e} is very large. "
+            "Trajectory estimate may be unreliable.",
+            RuntimeWarning,
+        )
+    W_inv = np.linalg.pinv(W_T, rcond=rcond)
+    v = W_inv @ delta  # (N,) - shared across all steps
+
+    A_T_transpose = A.T
+    U = np.zeros((T, M))
+    power = np.eye(N)  # (A^T)^0
+    # Fill from k = T-1 down to k = 0, since power increases with (T-1-k)
+    for k in range(T - 1, -1, -1):
+        U[k] = B.T @ power @ v
+        power = power @ A_T_transpose
+
+    energy = float(np.sum(U ** 2))
+    return energy, U
+
+
+def zero_order_hold(U: NDArray, tr_ms: float) -> "Callable[[float], NDArray]":
+    """Turn a discrete control trajectory into a continuous u_func(t).
+
+    Parameters
+    ----------
+    U     : (T, M) ndarray - control trajectory from
+            ``minimum_energy_trajectory``.
+    tr_ms : float - duration of each step in ms (the TR).
+
+    Returns
+    -------
+    u_func : callable, u_func(t) -> (M,) ndarray, constant over each
+        [k*tr_ms, (k+1)*tr_ms) interval, zero for t past the horizon.
+    """
+    T = U.shape[0]
+
+    def u_func(t: float) -> NDArray:
+        k = int(t // tr_ms)
+        if k < 0:
+            k = 0
+        if k >= T:
+            return np.zeros(U.shape[1])
+        return U[k]
+
+    return u_func
+
+
+def minimum_energy_trajectory_ltv(
+    A_list: List[NDArray],
+    B_list: List[NDArray],
+    x0: NDArray,
+    xT: NDArray,
+    rcond: float = 1e-10,
+) -> Tuple[float, NDArray]:
+    """Minimum-energy control for a LINEAR TIME-VARYING system.
+
+    x[k+1] = A_list[k] x[k] + B_list[k] u[k],  k = 0,...,T-1  (T = len(A_list))
+
+    This is the correct generalization of ``minimum_energy_trajectory`` for
+    Path A2: rather than freezing the Jacobian at one instant (naive,
+    treats a moving reference as if it were static), this uses a DIFFERENT
+    (A_k, B_k) pair at each step, obtained by linearizing along the actual
+    reference trajectory x_ref(t) itself (the Floquet/variational-equation
+    approach for a periodic orbit). Since x_ref(t) exactly satisfies the
+    nonlinear dynamics, the deviation delta_x = x - x_ref has NO zeroth-order
+    drift term -- only the time-varying linear correction A_k, matching the
+    same deviation-coordinate convention as the LTI case.
+
+    Derivation: x[T] = Phi(T,0) x[0] + sum_k Phi(T,k+1) B_k u[k], where
+    Phi(T,j) = A_{T-1}...A_j is the state-transition matrix (Phi(T,T)=I).
+    Minimum-energy solution: let M_k = Phi(T,k+1) B_k,
+    W_T = sum_k M_k M_k^T, delta = xT - Phi(T,0) x0,
+    u*[k] = M_k^T W_T^{-1} delta. Reduces exactly to the LTI formula when
+    every A_k, B_k is the same matrix.
+
+    Parameters
+    ----------
+    A_list, B_list : length-T lists of (n,n) / (n,m) ndarrays.
+    x0, xT : (n,) ndarray - deviation-coordinate boundary states.
+    rcond : passed to pinv, as in the LTI version.
+
+    Returns
+    -------
+    energy : float
+    U : (T, m) ndarray - u[k] as row k.
+    """
+    T = len(A_list)
+    n = A_list[0].shape[0]
+    m = B_list[0].shape[1]
+
+    # Phi(T, k) for k = 0..T, computed once via backward accumulation
+    Phi = [None] * (T + 1)
+    Phi[T] = np.eye(n)
+    for k in range(T - 1, -1, -1):
+        Phi[k] = Phi[k + 1] @ A_list[k]
+
+    M = [Phi[k + 1] @ B_list[k] for k in range(T)]
+    W_T = sum(Mk @ Mk.T for Mk in M)
+
+    cond = np.linalg.cond(W_T)
+    if cond > 1e12:
+        warnings.warn(
+            f"LTV Gramian condition number {cond:.2e} is very large. "
+            "Trajectory estimate may be unreliable.",
+            RuntimeWarning,
+        )
+    W_inv = np.linalg.pinv(W_T, rcond=rcond)
+
+    delta = np.asarray(xT, dtype=float) - Phi[0] @ np.asarray(x0, dtype=float)
+    v = W_inv @ delta
+
+    U = np.zeros((T, m))
+    for k in range(T):
+        U[k] = M[k].T @ v
+
+    energy = float(delta @ v)
+    return energy, U
 
 
 # Average / modal controllability (Gu et al. 2015)
