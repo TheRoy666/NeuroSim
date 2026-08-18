@@ -1,0 +1,4 @@
+phase_shift,naive_err,ltv_err,ceiling_err,naive_energy,ltv_energy,ceiling_method,note
+3.945,1.4121,0.7943,0.7943,324.6549,59.4749,finite_difference,complete
+9.863,1.7651,2.7622,0.0651,30.6559,5.2831,finite_difference,complete
+15.78,1.9916,1.5569,0.0016,4.4459,0.1332,adjoint_gradient,"completed after the adjoint-gradient method was built -- the original finite-difference approach timed out on this target even at reduced iteration counts (25 iter). Adjoint method: 13 iterations, 19 function evaluations, 2.39s."
