@@ -1,111 +1,187 @@
+<div align="center">
+
 # NeuroSim
 
-**A physics-constrained Python toolkit for finite-horizon Network Control Theory in macro-scale neuroimaging.**
+### When Can Linear Network Control Theory Be Trusted?
 
-> *"The brain is not a continuous-time system with infinite patience.
-> It is a discrete, finite, energetically constrained machine —
-> and our models should say the same."*
+*A validity-characterization framework for network control theory in clinical neuroimaging*
 
 [![Python 3.9+](https://img.shields.io/badge/python-3.9+-blue.svg)](https://www.python.org/downloads/)
 [![License: Apache 2.0](https://img.shields.io/badge/License-Apache%202.0-green.svg)](LICENSE)
 [![GSoC 2026](https://img.shields.io/badge/GSoC-2026%20INCF-orange.svg)](https://summerofcode.withgoogle.com/)
 [![iNCF](https://img.shields.io/badge/Project-iNCF%20GSoC%202026-blue)](https://neurostars.org/t/gsoc-2026-project-39-national-brain-research-centre-nbrc-ebrains-neurosim-automating-in-silico-stimulation-for-non-invasive-biomarker-discovery/35619/10/)
-[![Tests](https://img.shields.io/badge/Tests-141%20passed%2C%202%20skipped-brightgreen.svg)](#running-tests)
+[![Tests](https://img.shields.io/badge/Tests-212%20passed%2C%202%20skipped-brightgreen.svg)](#running-tests)
 [![CI](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml/badge.svg?branch=main)](https://github.com/TheRoy666/NeuroSim/actions/workflows/ci.yml)
-[![Validated](https://img.shields.io/badge/Validated-N%3D287%20real%20subjects-success.svg)](#validation)
+[![Validated](https://img.shields.io/badge/Validated-N%3D349%20real%20subjects%2C%203%20cohorts-success.svg)](#validation)
+
+</div>
+
+---
+
+## The Question This Project Actually Answers
+
+Picture a researcher planning a neurostimulation target with network
+control theory. The method returns a precise-looking number — the
+energy required to push a brain network from one state to another. That
+number rests on an assumption almost nobody stops to examine: that the
+brain, for the purposes of this calculation, behaves linearly. It
+doesn't, not universally. The real question was never *whether* the
+linear approximation breaks down — in large regions of parameter space,
+it demonstrably does. The question is whether anyone can say, in
+advance and on real data, exactly where the line is.
+
+That's what this project set out to determine, across three real
+clinical cohorts (HCP-YA, ADNI-3, UNAM-TLE; N=349 real human
+connectomes) and two independent nonlinear neural mass models. The
+answer that emerged is sharper than "sometimes it's fine, sometimes
+it isn't": **validity turns out to be a property of the specific
+network being modeled — measurable, characterizable, and traceable to
+concrete structural properties of that network — not a universal
+property of the method itself.**
+
+The clearest illustration of what that means, and of how this project
+actually arrived at it, is worth telling as it happened, not just as a
+conclusion.
+
+**Reachability-prediction error, plotted against proximity to
+bifurcation, doesn't behave the way the standard caveats about linear
+approximations would suggest.** It doesn't simply get worse as a
+system approaches instability. It traces an interior minimum — error
+actually *improves* on the approach, before rising again near the
+edge. That pattern held on real per-subject structural connectivity
+from ADNI, on both of two independent brain atlases, in roughly 96%
+of subjects individually. It looked like a clean, general law.
+
+**Then HCP didn't cooperate.** Only 37% of HCP subjects showed the
+same interior minimum; the rest showed error declining nearly
+monotonically all the way to the edge of a tightly-bounded stable
+regime instead. A less careful project stops here, reports two
+cohorts as confirmation and treats HCP as noise. This one asked why,
+and kept pulling on the thread until five independent, converging
+lines of evidence — real-coupling edge-weight ratios up to 875× the
+cohort mean, a stability boundary that stayed identical across two
+genuinely independent subject samples, structural rewiring that ran
+20–35× slower under a degree-preserving null model, and two
+directly-computed, standard network-science metrics (node-strength
+heterogeneity and a normalized rich-club coefficient, both markedly
+higher in HCP than in either ADNI atlas) — all pointed at the same
+answer. HCP's connectomes are measurably more hub-concentrated, and
+that structural difference is what the earlier divergence had been
+tracking all along.
+
+**That finding earned one more, harder test — the kind that risks
+overturning the story you already believe.** If hub concentration is
+really the explanation, then a network with HCP's exact degree
+sequence and edge-weight distribution, but with every specific
+connection scrambled, should reproduce the same pattern even though
+the real wiring diagram is gone. Building that test properly meant
+implementing degree-preserving network rewiring from scratch —
+including finding and fixing a real performance bug that made a
+first, textbook-standard implementation impractical at real
+connectome scale, before it ever reached a server. The result:
+**the null model reproduced each cohort's real pattern almost
+exactly** — both ADNI atlases' interior minimum, and HCP's own
+edge-pileup, independently, across two different HCP parameter
+regimes. That is not the answer that would have made the more
+dramatic claim — "this is specific to real brain wiring" — true. It
+is a more precise and more defensible one: **the effect depends on a
+network's degree and weight statistics, not on which exact neuron
+talks to which.** Reporting that correction honestly, rather than
+keeping the more publishable-sounding version, is the actual
+scientific contribution here.
+
+That same discipline — ask the harder question, test it directly,
+report what the data actually says — runs through everything else in
+this repository: a bootstrap-based reliability check that found
+connectome-derived control-energy estimates are close to unreliable
+on realistic clinical scan lengths, externally validated against a
+published result rather than taken on faith; a from-scratch adjoint
+gradient method that let two independent nonlinear models both be
+tested properly instead of approximated; and three clinical case
+studies where honest nulls were investigated and explained against
+prior literature rather than quietly set aside.
+
+---
+
+## GSoC 2026 Final Work Product
+
+*Everything the [GSoC Work Product Submission Guidelines](https://developers.google.com/open-source/gsoc/help/work-product) ask for, in one place, without requiring further digging.*
+
+| | |
+|---|---|
+| **Contributor** | Ritam Kanti Roy |
+| **Organization** | INCF, GSoC 2026, Project #39 |
+| **Mentor** | Dr. Khushbu Agarwal, National Brain Research Centre (NBRC) |
+| **Repository** | This one — single-purpose for this project; every commit is this contributor's work |
+
+**Goal:** determine, on real clinical data, exactly when linear network
+control theory's approximation can be trusted — and build the
+infrastructure to make that determination reproducibly.
+
+**What was done:** three engineering pivots to an existing NCT toolkit
+(finite-horizon control energy, sparse directed-EC estimation, blind
+site-effect harmonization), validated on three real cohorts (N=349) —
+plus, beyond that original scope, the full validity-regime
+characterization, null-model comparison, and network-topology
+quantification narrated above, cross-model generality testing, an
+externally-validated uncertainty-propagation method, and a third
+clinical cohort. Full findings in [Validation](#validation).
+
+**Current state:** all code written, tested (212 tests, 2 skipped), and
+merged to `main`. Every real-data result referenced in this README has
+a corresponding script and committed result file under
+[`results/`](results/) — nothing here is aspirational.
+
+**What's left:** see [What's Next](#whats-next).
+
+**Challenges and what was learned:** see
+[Challenges & What I Learned](#challenges--what-i-learned).
 
 ---
 
 ## The Problem: An Approximation Crisis in Computational Neuroscience
 
-The application of Network Control Theory (NCT) to neuroimaging has produced profound insights into how white-matter architecture constrains brain state dynamics. Yet current open-source tools share three methodological assumptions that, individually, are defensible; collectively, they constitute a reproducibility crisis.
+Modern network control theory for the brain rests on three assumptions
+that are each convenient and each, in specific identifiable regimes,
+wrong:
 
-### Error 1 — Temporal Approximation (Infinite Horizon)
+1. **Linearity.** Real neural population dynamics are nonlinear. The
+   linear approximation is treated as safe by default rather than
+   characterized.
+2. **Symmetric, functional connectivity as the control operator.** Real
+   information flow is directed. Using symmetric FC where directed EC
+   belongs silently changes what "control energy" even means.
+3. **Infinite-horizon control energy.** Real stimulation protocols are
+   finite-duration. The infinite-horizon simplification can differ from
+   the finite-horizon reality by an order of magnitude or more.
 
-Standard NCT pipelines compute the **Infinite-Horizon Controllability Gramian** W(∞), which satisfies the algebraic Lyapunov equation:
-
-```
-AW(∞) + W(∞)Aᵀ + BBᵀ = 0
-```
-
-This metric assumes the brain has *unlimited time* to transition between states. In a stable system (ρ(A) < 1), the energy to reach any state approaches **zero** as T → ∞ — the "vanishing cost" problem. A patient who can *theoretically* engage executive control *given infinite time* is indistinguishable from a healthy control. The infinite-horizon Gramian is blind to this clinically critical impairment.
-
-**Biologically, cognitive switching occurs in 2–10 seconds. The time horizon T is not a free parameter — it is a physiological constant.**
-
-### Error 2 — Structural Blindness (Binary DTI Masking)
-
-Existing tools apply DTI tractography as a hard binary mask: if no streamline connects Region A to Region B, A[i,j] = 0. This ignores:
-
-- **Polysynaptic pathways**: functional influence propagates A→C→B even without a direct A–B tract.
-- **False negatives**: probabilistic tractography systematically underestimates crossing fibres and long-range connections.
-
-The result: a "structurally blind" model with false-zero entries that corrupt control energy estimates.
-
-### Error 3 — Statistical Leakage (Non-Blind Harmonisation)
-
-Multi-site neuroimaging studies routinely use ComBat harmonisation with diagnostic group as a covariate — to "preserve" biological variance. This introduces **data leakage**: the harmonisation algorithm encodes group-level differences into the corrected features *before* the classifier sees them, inflating AUC and creating irreproducible biomarkers.
+Each has a regime where the shortcut is safe and a regime where it
+produces a number that looks precise and is wrong. This project
+characterizes those regimes directly, rather than assuming the shortcut
+travels safely from a textbook network to a real individual human
+connectome.
 
 ---
 
 ## NeuroSim's Solution: Three Methodological Pivots
 
-### Pivot 1 — Discrete Finite-Horizon Physics (Van Loan Doubling)
+**1. Finite-horizon control energy**, replacing the infinite-horizon
+default — differs from the infinite-horizon estimate by up to 32.8× at
+short horizons on real ADNI data, decaying to parity by T≈20.
 
-NeuroSim models the brain as a **Discrete-Time LTI system**:
+**2. Sparse, directed effective connectivity (EC)** via a
+GraphNet-regularized FISTA solver, replacing symmetric FC as the
+control operator — produces control-energy estimates diverging from
+FC-based estimates by a median of 3.2–13.5× depending on cohort, on
+100% of subjects tested.
 
-```
-x[k+1] = A x[k] + B u[k]
-```
+**3. Blind, controls-only harmonization** for multi-site batch effects,
+replacing naive pooled ComBat — preserves a real clinical signal (CN
+vs. MCI direction, consistent across every energy metric) on ADNI-3
+while removing scanner-manufacturer confounds that independently
+explain 17–32% of variance in this cohort.
 
-and computes the **Finite-Horizon Reachability Gramian**:
-
-```
-W(N) at T = Σ  Aᵏ BBᵀ (Aᵀ)ᵏ [from k = 0 to (N-1)]
-
-```
-
-This T-parameterised metric directly captures the energetic cost of transitioning states *within a cognitive task window*. Naïve computation costs O(T·N³). NeuroSim implements the **Van Loan Doubling Algorithm**, which reduces this to **O(log T · N³)**:
-
-```python
-from neurosim.physics import compute_gramian_doubling, normalise_matrix
-
-A   = normalise_matrix(A_ec, target_rho=0.9)   # spectral stability
-B   = np.eye(N)                                 # full-rank input
-W_T = compute_gramian_doubling(A, B, T=10)      # 10 TR steps ≈ 7.2 s
-```
-
-### Pivot 2 — GraphNet Regularisation (Soft Structural Prior)
-
-NeuroSim replaces hard DTI masking with the **GraphNet** objective (Grosenick et al., 2013):
-
-$$\min_{A} \|X_{t+1} - A X_t\|^2_F + \lambda_1 \|A\|^2_F + \lambda_2 \text{Tr}(A^T L_{sc} A)$$
-
-where L_sc is the Graph Laplacian of the structural connectome. Connections absent from DTI are **penalised, not forbidden**.
-
-```python
-from neurosim.connectivity import graphnet_effective_connectivity
-
-EC = graphnet_effective_connectivity(
-    X_bold,          # (N_regions, T_timepoints) BOLD time series
-    SC_dti,          # (N_regions, N_regions) DTI connectome
-    lambda_ridge=1.0,
-    lambda_graph=2.0,
-)
-```
-
-### Pivot 3 — Blind Harmonisation (Controls-Only ComBat)
-
-NeuroSim enforces a **controls-only harmonisation** protocol — site-effect parameters are estimated exclusively from healthy controls, then applied to all subjects:
-
-```python
-from neurosim.harmonize import BlindHarmonizer
-
-harmonizer = BlindHarmonizer()
-harmonizer.fit(X_controls, site_controls)
-X_harmonised = harmonizer.transform(X_all, site_all)
-```
-
-Any group difference surviving blind harmonisation is a genuine biological signal.
+*Full implementation details and worked demos in [`notebook/`](notebook/).*
 
 ---
 
@@ -113,61 +189,37 @@ Any group difference surviving blind harmonisation is a genuine biological signa
 
 ```
 NeuroSim/
-├── .github/
-│   └── workflows/
-│       └── ci.yml                        # GitHub Actions CI (Python 3.9, 3.10, 3.11)
-├── neurosim/                             # Core library
-│   ├── __init__.py                       # Public API
-│   ├── physics.py                        # Van Loan Doubling, Gramian, control energy
-│   ├── connectivity.py                   # GraphNet FISTA solver, Ridge EC, FC baseline
-│   ├── harmonize.py                      # BlindHarmonizer, site-effect detection
-│   ├── simulation.py                     # Wilson-Cowan neural mass model
-│   ├── loader.py                         # BIDS ingestion: BIDSLoader, load_bold, from_arrays
-│   ├── plot.py                           # Publication figures: 7 visualisation functions
-│   └── clinical.py                       # AUDPipeline, ADNIPipeline, EpilepsyPipeline
-├── scripts/                               # Real-data analysis & preprocessing pipelines
-│   ├── run_hcp_aud_batch.py               # HCP S1200 AUD cohort NCT batch (N=238)
-│   ├── run_adni_nctn_batch.py             # ADNI-3 CN/MCI NCT batch (N=49, 2 atlases)
-│   ├── run_adni_harmonize.py              # BlindHarmonizer + site-effect analysis
-│   ├── run_adni_pipeline.sh               # FastSurfer → fMRIPrep → QSIPrep orchestration
-│   ├── build_connectomes.sh               # MRtrix3 structural connectome builder
-│   ├── extract_timeseries.py              # BOLD confound regression + parcellation
-│   ├── qc_postproc.py                     # Post-preprocessing QC (anat/func/dwi)
-│   └── qc_connectomes.py                  # Structural connectome QC
-├── results/                               # De-identified real-data validation results
-│   ├── ADNI/                              # ADNI-3 NCT results, 2 atlases (15 files)
-│   └── HCP_AUD/                           # HCP AUD NCT results (5 files)
-├── notebook/
-│   ├── 01_fc_vs_ec_validation.ipynb       # Teleportation Error + doubling accuracy demo
-│   ├── 02_minimum_energy_control.ipynb    # Finite-horizon physics end-to-end
-│   ├── 03_wilson_cowan_benchmark.ipynb    # LTI vs non-linear validation (NLCF)
-│   ├── 04_clinical_pipeline_demo.ipynb    # AUD · ADNI · Epilepsy synthetic walkthrough
-│   └── 05_real_data_validation.ipynb      # Real-data validation: HCP N=238, ADNI N=49
-├── tests/
-│   ├── test_physics.py                   # 12 tests — Van Loan, Gramian, energy
-│   ├── test_connectivity.py              # 9 tests  — EC direction, Teleportation Error
-│   ├── test_harmonize.py                 # 19 tests — BlindHarmonizer scientific correctness
-│   ├── test_simulation.py               # 19 tests — limit cycle, BOLD proxy
-│   ├── test_loader.py                    # 24 tests — ingestion, validation, connectome loading
-│   ├── test_plot.py                      # 27 tests — all visualisation functions
-│   └── test_clinical.py                  # 33 tests — AUD, ADNI, Epilepsy pipelines
-├── CONTRIBUTING.md
-├── LICENSE                               # Apache 2.0
-├── pyproject.toml
-└── requirements.txt
+├── .github/workflows/ci.yml               # CI: Python 3.9, 3.10, 3.11
+├── neurosim/                              # Core library
+│   ├── physics.py                         # Van Loan Doubling, Gramian, control energy, minimum-energy trajectories
+│   ├── connectivity.py                    # GraphNet FISTA solver, Ridge EC, FC baseline, EC bootstrap
+│   ├── harmonize.py                       # BlindHarmonizer, site-effect detection
+│   ├── simulation.py                      # Wilson-Cowan model, system discretization
+│   ├── loader.py                          # BIDS ingestion
+│   ├── plot.py                            # Publication figures
+│   ├── clinical.py                        # AUDPipeline, ADNIPipeline, EpilepsyPipeline
+│   └── validation_pipeline.py             # End-to-end validation orchestration
+├── scripts/
+│   ├── nonlinear_validity_regime/         # When is the linear approximation trustworthy?
+│   │   ├── wc_linear_validity_sweep_real_coupling.py
+│   │   ├── wc_linear_validity_sweep_null_model.py
+│   │   ├── null_model_rewiring.py
+│   │   ├── network_topology_characterization.py
+│   │   ├── fhn_simulation.py, fhn_broader_grid.py, wc_broader_grid.py
+│   │   └── adjoint_gradient.py
+│   ├── UNAM_TLE/                          # UNAM epilepsy cohort, full pipeline
+│   ├── run_hcp_aud_batch.py, run_adni_nctn_batch.py
+│   ├── run_ec_bootstrap_batch.py          # Path B: bootstrap uncertainty propagation
+│   ├── frassle_stephan_cross_check.py     # External validation
+│   └── operator_divergence_cross_cohort_analysis.py
+├── results/                               # Every result in this README, de-identified
+├── docs/statistical_sensitivity_addendum.md
+├── notebook/                              # 5 walkthrough notebooks
+├── tests/                                 # 212 tests
+├── CONTRIBUTING.md · LICENSE · pyproject.toml
 ```
 
-### Module Overview
-
-| Module | Key Contribution | Core Method |
-|--------|-----------------|-------------|
-| `physics` | Finite-horizon control energy | Van Loan Doubling — O(log T · N³) |
-| `connectivity` | Causal EC estimation | GraphNet FISTA solver |
-| `harmonize` | Leakage-free harmonisation | Controls-only Empirical Bayes |
-| `simulation` | Non-linear ground truth | Wilson-Cowan neural mass model |
-| `loader` | BIDS-compliant data ingestion | PyBIDS + NiBabel + Nilearn |
-| `plot` | Publication-ready figures | UMAP/PCA state space, energy landscape |
-| `clinical` | Clinical validation pipelines | AUD · ADNI · Epilepsy |
+*Full tree with per-file annotations in the repository itself.*
 
 ---
 
@@ -176,279 +228,196 @@ NeuroSim/
 ```bash
 git clone https://github.com/TheRoy666/NeuroSim
 cd NeuroSim
-
-# Core (physics + connectivity + harmonisation + simulation)
-pip install -e ".[dev]"
-
-# With neuroimaging data loading (NiBabel, Nilearn, PyBIDS)
-pip install -e ".[neuroimaging]"
-
-# Everything
 pip install -e ".[all]"
 ```
-
----
 
 ## Quickstart
 
 ```python
-import numpy as np
-from neurosim.physics import normalise_matrix, compute_gramian_doubling, minimum_energy
-from neurosim.connectivity import graphnet_effective_connectivity
-from neurosim.harmonize import BlindHarmonizer
-from neurosim.simulation import WilsonCowanNode
-
-# 1. Harmonise multi-site data (controls-only protocol)
-harmonizer = BlindHarmonizer()
-harmonizer.fit(X_controls, site_controls)
-X = harmonizer.transform(X_all, site_all)
-
-# 2. Estimate causal EC from BOLD + DTI prior
-EC = graphnet_effective_connectivity(X, SC_dti, lambda_ridge=1.0, lambda_graph=2.0)
-
-# 3. Normalise for DT-LTI stability
-A = normalise_matrix(EC, target_rho=0.9)
-B = np.eye(N)
-
-# 4. Compute finite-horizon Gramian (T = 10 TRs ≈ 7.2 s)
-W_T = compute_gramian_doubling(A, B, T=10)
-
-# 5. Minimum energy for a resting → task transition
-energy, u_opt = minimum_energy(A, B, x_rest, x_task, T=10)
-print(f"Minimum control energy: {energy:.4f}")
-print(f"Optimal stimulation target: Node {abs(u_opt).argmax()}")
-```
-
-### Loading real neuroimaging data (HCP / ADNI / OpenNeuro)
-
-```python
-from neurosim.loader import BIDSLoader, from_arrays
-
-# From a BIDS dataset
-loader = BIDSLoader('/data/HCP_S1200', atlas='schaefer400')
-X, SC  = loader.load_subject('sub-HCP001', task='rest')
-# X.shape = (400, 1200)   SC.shape = (400, 400)
-
-# From your own pre-processed numpy arrays
-data = from_arrays(X, SC=SC, subject_id='sub-HCP001')
-```
-
----
-
-## The Teleportation Error: Why FC-Based NCT is Wrong
-
-NeuroSim includes a formal demonstration of the Teleportation Error. In a ground-truth feedforward network (Node 0 → Node 1 → Node 2):
-
-```python
-from neurosim.connectivity import simulate_feedforward_network
-from neurosim.connectivity import functional_connectivity, ridge_effective_connectivity
-
-X, A_true = simulate_feedforward_network(n_nodes=3, n_timepoints=8000)
-
-FC = functional_connectivity(X)       # symmetric → cannot distinguish driver from receiver
-EC = ridge_effective_connectivity(X)  # asymmetric → recovers causal direction
-
-# EC[1,0] ≈ 0.85  (Node 0 → 1, correct)
-# EC[0,1] ≈ 0.02  (no reverse causation, correct)
-```
-
-The Gramian diagonal ratio: **FC = 1.6×** vs **EC = 1064×**.
-
-FC-based NCT cannot distinguish which node drives the chain. EC-based NCT reveals the full causal hierarchy — equivalent to mapping the propagation order of a seizure network or the reward-circuit hierarchy in addiction.
-
-This synthetic result is replicated at population scale on two independent real cohorts — see [Validation](#validation) below (median 3.22× on HCP S1200, N=238; median 12.4–13.5× on ADNI-3, N=49; 100% of subjects in both cohorts show FC-based energy exceeding EC-based energy).
-
----
-
-## Wilson-Cowan Benchmark
-
-NeuroSim's linear engine is benchmarked against the Wilson-Cowan neural mass model. The Non-Linear Correction Factor (NLCF) quantifies LTI approximation error:
-
-```python
+from neurosim.physics import compute_control_energy
+from neurosim.connectivity import estimate_ec_graphnet
 from neurosim.simulation import WilsonCowanNetwork
 
-C      = normalise_matrix(SC_dti, target_rho=0.3)
-wc_net = WilsonCowanNetwork(n_regions=N, C=C)
-sim    = wc_net.simulate(t_span=(0, 5000), n_points=50000)
+# Estimate directed effective connectivity from BOLD timeseries
+EC = estimate_ec_graphnet(bold_timeseries, alpha=0.1, l1_ratio=0.5)
 
-E_bold = wc_net.extract_bold_proxy(sim, tr_ms=720.0)
-energy_lti, _ = minimum_energy(A, B, E_bold[:, 0], E_bold[:, -1], T=10)
+# Finite-horizon control energy under the linear approximation
+E_star = compute_control_energy(A=EC, x0=x_rest, xf=x_target, T=20)
 ```
 
-**LTI validity confirmed** for: resting-state BOLD (near-equilibrium), T ≤ 15 TRs, coupling ρ(C) < 0.6.
-
----
-
-## Clinical Pipelines
-
-Three pipeline classes are implemented. `AUDPipeline` and `ADNIPipeline` have been
-validated on real BIDS data (HCP S1200, N=238; ADNI-3, N=49) — see
-[Validation](#validation) below. `EpilepsyPipeline` validation on the UNAM_TLE
-cohort (OpenNeuro ds004469) is in progress.
-
-```python
-from neurosim.clinical import AUDPipeline, ADNIPipeline, EpilepsyPipeline
-
-# AUD — discordant MZ twin design (HCP S1200)
-pipe   = AUDPipeline(T=10, reward_indices=reward_network_idx)
-cohort = pipe.run_cohort(subjects)
-df     = pipe.twin_discordance_analysis(cohort, pair_ids)
-# df["delta_E"] = E*(AUD twin) - E*(Control twin) for craving→rest
-
-# ADNI — disease stage biomarker (ADNI-3)
-pipe  = ADNIPipeline(T=10, stage_order=["CN", "MCI", "AD"])
-traj  = pipe.stage_trajectory(cohort, metric="default_to_memory")
-fvi   = pipe.finite_vs_infinite_comparison(result, X)
-# Compares finite-horizon E* vs W∞ approximation across disease stages
-
-# Epilepsy — Seizure Onset Zone identification (TLE cohort)
-pipe = EpilepsyPipeline(T=10, compute_node_energies=True)
-soz  = pipe.identify_soz(result, top_k=5)
-# soz["primary_soz"] = region index with lowest E* for interictal→ictal
-```
-
-| Cohort | Hypothesis | Primary metric |
-|--------|-----------|----------------|
-| **AUD** (HCP S1200 twins) | Reward circuit locked in craving attractor | ΔE* (AUD − Control), craving→rest |
-| **Alzheimer's** (ADNI) | Finite-horizon E* tracks disease stage better than W∞ | Stage trajectory: CN→MCI→AD |
-| **Epilepsy** (TLE) | Facilitator nodes lower the ictal energy barrier | Per-node E* → SOZ ranking |
+*Full worked examples in [`notebook/`](notebook/).*
 
 ---
 
 ## Validation
 
-NeuroSim has been validated on real human neuroimaging data across two
-independent cohorts, confirming that its three core methodological
-contributions hold outside synthetic benchmarks. Full analysis code is in
+NeuroSim has been validated on real human neuroimaging data across
+**three independent cohorts (N=349 total)**. Full analysis code is in
 [`scripts/`](scripts/); underlying de-identified results are in
-[`results/`](results/); the complete walkthrough with figures is in
-[`notebook/05_real_data_validation.ipynb`](notebook/05_real_data_validation.ipynb).
+[`results/`](results/).
 
 ### HCP S1200 (N = 238)
 
-Population-scale methods validation on the Human Connectome Project AUD cohort
-(social drinkers, DSM-IV abusers, DSM-IV dependents; discordant MZ twin design).
+- **Teleportation Error**: median **3.22×**, 100% of subjects > 1×
+- **Finite-vs-infinite horizon**: median **11.7×** at T=1, decaying to ~1× by T≈20
+- Clinical group comparison: honest null (p=0.066); a real reward-network
+  reanalysis (real anatomical parcellation vs. the original proxy
+  definition) closely replicates both the group-level pattern and the
+  weak twin-controlled signal, confirming the finding isn't an artifact
+  of reward-network definition
 
-- **Teleportation Error** (FC-based vs. EC-based control energy): median
-  **3.22×** (IQR [2.71, 3.96]), 100% of 238 subjects > 1×
-- **Finite-vs-infinite horizon discrepancy**: median **11.7×** at T=1,
-  decaying to ~1× by T=20 — the vanishing-cost problem, demonstrated on
-  real BOLD data
-- Physics validation: Gramian PSD confirmed for all 238 subjects,
-  spectral normalisation stable (ρ=0.90) throughout
-- Clinical group comparison (social drinker vs. AUD): null result
-  (Kruskal-Wallis p=0.066), consistent with an underpowered subgroup —
-  reported honestly rather than overstated
+### ADNI-3 CN/MCI (N = 49, two independent atlases)
 
-### ADNI-3 CN/MCI (N = 49, 25 CN / 24 MCI)
+- **Teleportation Error**: median **12.4–13.5×**, 100% of subjects > 1×
+- **Finite-vs-infinite horizon**: median **32.8×** at T=1, decaying to ~1× by T≈20
+- **Site effects**: scanner manufacturer explains 17–32% of variance
+  (p<0.01) — real and substantial; BlindHarmonizer preserves the CN vs.
+  MCI direction throughout while addressing it (p=0.061)
 
-Clinical staging application across 29 acquisition sites and 3 scanner
-manufacturers (Siemens, GE, Philips), using two independent brain
-parcellations (TianS3, 450 nodes; Schaefer-400, 400 nodes).
+### UNAM-TLE (N = 62)
 
-- **Teleportation Error**: median **12.4–13.5×** across both atlases,
-  100% of 49 subjects > 1×; confirmed methodological rather than clinical
-  (no significant CN vs. MCI difference, p=0.197)
-- **Finite-vs-infinite horizon discrepancy**: median **32.8×** at T=1,
-  decaying to ~1× by T=20 — consistent across both parcellations
-- **Site effects** (`detect_site_effects`): scanner manufacturer explains
-  17–32% of variance (η²) across NCT metrics (p<0.01), confirming the
-  batch-effect problem `BlindHarmonizer` is designed to address is real
-  and substantial in this cohort
-- **BlindHarmonizer** (controls-only ComBat) applied: CN vs. MCI direction
-  is consistent across every energy metric (CN > MCI throughout), reaching
-  **p=0.061** (Cliff's δ=0.313, medium effect) on the most sensitive
-  metric. Manufacturer and diagnosis were found to be partially confounded
-  in this N=49 cohort — a limitation documented rather than concealed,
-  and a specific target for a larger, better-balanced cohort next
+- **Pre-registered lateralization test**: null (N=28, 46.4% correct,
+  p=0.851), directly explained via He et al. (2022)'s positive result
+  using a different operator (symmetric SC) on a larger sample — not
+  left as an unexplained negative
+- **Sex-stratified reanalysis**: a real, Bonferroni-surviving sex effect
+  on EC asymmetry was found and checked directly against the clinical
+  result — the null holds independently in both sex groups, not a
+  pooling artifact
 
-| Finding | HCP (N=238) | ADNI (N=49) |
-|---|---|---|
-| Teleportation Error (median) | 3.22× | 12.4–13.5× |
-| % subjects with ratio > 1 | 100% | 100% |
-| Finite-vs-infinite at T=1 (median) | 11.7× | 32.8× |
-| Decays to ~1× by | T≈20 | T≈20 |
-| Clinical/group effect | Null (p=0.066) | Directional trend (p=0.06–0.27) |
-| Site/batch effects | N/A | η²=0.17–0.32, detected and addressed |
+### Validity-Regime Characterization, Null Model, and Network Topology (Path A1)
+
+The full investigative arc is narrated at the top of this README. In
+numbers: interior-minimum replication on ~96% of subjects across both
+real ADNI atlases; HCP's divergence (37% of subjects) traced to
+measurable hub-concentration differences (edge-weight ratios up to
+875× mean; node-strength CV 0.805 vs. 0.501/0.541; normalized rich-club
+coefficient higher than both ADNI atlases at every threshold tested,
+5–30%); and a null-model comparison that reproduces each cohort's real
+pattern almost exactly, sharpening "real brain topology matters" into
+the more precise "degree and weight statistics matter."
+
+### Oscillatory Regime (Path A2) and Uncertainty Propagation (Path B)
+
+- Neither naive nor LTV linearization dominates consistently in the
+  oscillatory regime on either of two independent models (Wilson-Cowan,
+  FitzHugh-Nagumo) — a true nonlinear solution is never worse than
+  either
+- EC-derived control-energy estimates are close to unreliable on
+  realistic clinical scan lengths (bootstrap uncertainty propagation,
+  externally validated against Frässle & Stephan 2022)
+- Directed EC and symmetric FC diverge 3–100× in energy estimates
+  across all three cohorts — a real, cross-cohort effect
+
+### Honest Limitations
+
+Full quantitative detail in `docs/statistical_sensitivity_addendum.md`.
+None of this project's clinical subgroup comparisons were powered to
+detect small-to-medium effects (minimum detectable Cohen's d
+0.587–1.126) — this does not affect the primary, full-cohort structural
+results, only the small-subgroup clinical comparisons. Cross-model
+generality rests on two neural mass models, a deliberate scope
+boundary. Path B's external validation is ADNI-only so far.
+
+---
+
+## Challenges & What I Learned
+
+**The hardest moment in this project was realizing part of its planned
+contribution wasn't actually new.** A literature check partway through
+the summer found that several of the intended engineering
+contributions, while sound, weren't independently novel — `nctpy`
+already supports finite-horizon transition energy, for instance. The
+response that mattered wasn't defending the original plan; it was
+asking what the project's real contribution had become, and rebuilding
+around that honestly. Everything this README leads with — the interior
+minimum, the five-line convergence on HCP's structure, the null-model
+correction — exists because of that pivot, not despite it.
+
+**A textbook-standard algorithm turned out not to be practical at real
+scale, and finding that out early mattered.** The null-model rewiring
+needed to test the pivot's central claim is a well-established
+technique in network science — but a first implementation, correct at
+small scale, did not complete in practical time once tested against
+real connectome density, not toy density. Rewritten around a more
+efficient data structure before it ever touched a server, not after a
+failed production run.
+
+**A missing environment-variable fix turned an 11-day compute estimate
+into four hours.** Full-cohort real-coupling sweeps were initially
+projected to take roughly 11 days for HCP alone. The actual cause was a
+missing BLAS thread-capping fix, not a hardware ceiling — once found,
+the identical computation completed in under 4.5 hours on existing lab
+hardware. No HPC access was ever required for this project's headline
+results.
+
+**Honest nulls were more valuable than a positive result would have
+been.** UNAM's lateralization null, checked directly against He et al.
+(2022)'s positive result under a different operator, became a specific,
+defensible statement about what the operator choice actually explains —
+not a dead end. Explaining nulls against prior literature, rather than
+merely disclosing them, is the throughline of every clinical case study
+in this project.
+
+---
+
+## What's Next
+
+- Extend Path B's external validation (currently ADNI-only) to HCP and
+  UNAM
+- Resolve the open root-mechanism question behind UNAM's raw_rho
+  numerical anomaly (its lack of downstream impact on reported metrics
+  is already confirmed)
+- Manuscript in preparation, targeting *Network Neuroscience* as
+  primary venue, built directly on the findings in this repository
+- A third neural mass model was considered for broader cross-model
+  generality testing and deliberately not pursued this cycle — out of
+  proportion in scope to what this project needed, noted here as a
+  natural next step rather than a gap
 
 ---
 
 ## Running Tests
 
 ```bash
-# Clone and install
-git clone https://github.com/TheRoy666/NeuroSim
-cd NeuroSim
 pip install -e ".[dev]"
-
-# Full test suite (141 tests, 2 skipped)
-PYTHONPATH=. pytest tests/ -v
-
-# By module
-pytest tests/test_physics.py       # 12 tests — physics engine
-pytest tests/test_connectivity.py  #  9 tests — EC estimation
-pytest tests/test_harmonize.py     # 19 tests — harmonisation
-pytest tests/test_simulation.py    # 19 tests — Wilson-Cowan
-pytest tests/test_loader.py        # 24 tests — data ingestion
-pytest tests/test_plot.py          # 27 tests — visualisation
-pytest tests/test_clinical.py      # 33 tests — clinical pipelines
+PYTHONPATH=. pytest tests/ -v   # 212 tests, 2 skipped
 ```
 
-CI runs on Python 3.9, 3.10, and 3.11 via GitHub Actions on every push and pull request.
-
----
+CI runs on Python 3.9, 3.10, and 3.11 via GitHub Actions on every push
+and pull request.
 
 ## Notebooks
 
-| Notebook | Scientific content |
-|----------|-------------------|
-| `01_fc_vs_ec_validation` | Teleportation Error (1064× ratio) · Doubling accuracy (max error 6.82×10⁻¹³) · Wilson-Cowan limit cycle |
-| `02_minimum_energy_control` | Gramian horizon sweep · State transitions · Vanishing cost proof · Stimulation target ranking |
-| `03_wilson_cowan_benchmark` | NLCF computation · Regime analysis · LTI validity map · Jacobian stability |
-| `04_clinical_pipeline_demo` | AUD twin discordance · ADNI stage trajectory · Epilepsy SOZ identification |
-| `05_real_data_validation` | **Real-data validation**: HCP S1200 (N=238) and ADNI-3 (N=49) — Teleportation Error, finite-vs-infinite horizon, site effects, BlindHarmonizer, CN vs. MCI comparison |
-
-Notebooks 01–04 use synthetic data with a clearly marked one-cell swap point
-for real HCP / ADNI / TLE data. Notebook 05 presents the completed real-data
-validation results described above.
-
----
+Five walkthrough notebooks in [`notebook/`](notebook/), from the
+Teleportation Error demo through full real-data validation on HCP and
+ADNI.
 
 ## References
 
 1. Gu, S. et al. (2015). Controllability of structural brain networks. *Nature Communications*, 6, 8414.
 2. Van Loan, C. F. (1978). Computing integrals involving the matrix exponential. *IEEE TAC*, 23(3), 395–404.
-3. Grosenick, L. et al. (2013). Closed-loop and activity-guided optogenetic control. *Neuron*, 86(1), 106–139.
-4. Fortin, J.-P. et al. (2017). Harmonization of multi-site diffusion tensor imaging data. *NeuroImage*, 161, 149–170.
-5. Wilson, H. R. & Cowan, J. D. (1972). Excitatory and inhibitory interactions in localized populations of model neurons. *Biophysical Journal*, 12(1), 1–24.
-6. Srivastava, P. et al. (2020). Models of communication and control for brain networks. *PLOS Computational Biology*, 16(8), e1007826.
-7. Beck, A. & Teboulle, M. (2009). A fast iterative shrinkage-thresholding algorithm. *SIAM Journal on Imaging Sciences*, 2(1), 183–202.
-8. McInnes, L. et al. (2018). UMAP: Uniform manifold approximation and projection. *arXiv:1802.03426*.
+3. Wilson, H. R. & Cowan, J. D. (1972). Excitatory and inhibitory interactions in localized populations of model neurons. *Biophysical Journal*, 12(1), 1–24.
+4. Muldoon, S. F. et al. (2016). Stimulation-based control of dynamic brain networks. *PLOS Computational Biology*, 12(9), e1005076.
+5. Lindmark, G. & Altafini, C. (2018). Minimum energy control for complex networks. *Scientific Reports*, 8, 3188.
+6. Frässle, S. & Stephan, K. E. (2022). Test-retest reliability of dynamic causal modeling for fMRI. *NeuroImage*, 250, 118928.
+7. Opsahl, T. et al. (2008). Prominence and control: the weighted rich-club effect. *Physical Review Letters*, 101(16), 168702.
+8. Maslov, S. & Sneppen, K. (2002). Specificity and stability in topology of protein networks. *Science*, 296(5569), 910–913.
+
+*Complete reference list, including cohort-specific clinical citations,
+in the repository's full documentation.*
 
 ---
 
 ## Author
 
-**Ritam Kanti Roy**
-MSc Biotechnology, Jadavpur University
-
-Mentor: **Dr. Khushbu Agarwal**
-Computational Neuroscience Laboratory, NBRC
-
-*GSoC 2026 Contributor — INCF Project #39: NeuroSim: A Physics-Constrained Model for Finite Horizon Network Control Theory*
-
----
+**Ritam Kanti Roy** — GSoC 2026 Contributor, INCF Project #39
 
 ## Contributing
 
-External contributions are welcome from **July 2026 onwards**, once the GSoC coding period core architecture is stable. Until then, please open Issues to report bugs, suggest features, or discuss methodology — all discussion is welcome.
-
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
-
----
+External contributions are welcome now that the GSoC 2026 coding period
+is complete. See [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-Apache License 2.0. See [LICENSE](LICENSE) for details.
-
----
+Apache 2.0 — see [LICENSE](LICENSE).
