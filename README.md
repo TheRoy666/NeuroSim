@@ -52,7 +52,7 @@ edge. That pattern held on real per-subject structural connectivity
 from ADNI, on both of two independent brain atlases, in roughly 96%
 of subjects individually. It looked like a clean, general law.
 
-**Then HCP didn't cooperate.** Only 37% of HCP subjects showed the
+**Then HCP data didn't cooperate.** Only 37% of HCP subjects showed the
 same interior minimum; the rest showed error declining nearly
 monotonically all the way to the edge of a tightly-bounded stable
 regime instead. A less careful project stops here, reports two
@@ -145,13 +145,13 @@ Modern network control theory for the brain rests on three assumptions
 that are each convenient and each, in specific identifiable regimes,
 wrong:
 
-1. **Linearity.** Real neural population dynamics are nonlinear. The
+1. **Linearity:** Real neural population dynamics are nonlinear. The
    linear approximation is treated as safe by default rather than
    characterized.
-2. **Symmetric, functional connectivity as the control operator.** Real
+2. **Symmetric, functional connectivity as the control operator:** Real
    information flow is directed. Using symmetric FC where directed EC
    belongs silently changes what "control energy" even means.
-3. **Infinite-horizon control energy.** Real stimulation protocols are
+3. **Infinite-horizon control energy:** Real stimulation protocols are
    finite-duration. The infinite-horizon simplification can differ from
    the finite-horizon reality by an order of magnitude or more.
 
@@ -360,8 +360,7 @@ in this project.
 - Resolve the open root-mechanism question behind UNAM's raw_rho
   numerical anomaly (its lack of downstream impact on reported metrics
   is already confirmed)
-- Manuscript in preparation, targeting *Network Neuroscience* as
-  primary venue, built directly on the findings in this repository
+- Manuscript in preparation built directly on the findings in this repository
 - A third neural mass model was considered for broader cross-model
   generality testing and deliberately not pursued this cycle — out of
   proportion in scope to what this project needed, noted here as a
