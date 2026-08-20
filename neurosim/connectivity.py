@@ -155,7 +155,7 @@ def graphnet_effective_connectivity(
     SC: NDArray,
     lambda_ridge: float = 1.0,
     lambda_graph: float = 1.0,
-    max_iter: int = 500,
+    max_iter: int = 3000,
     tol: float = 1e-6,
     lag: int = 1,
 ) -> NDArray:
@@ -170,6 +170,21 @@ def graphnet_effective_connectivity(
     via **FISTA** (Beck & Teboulle, 2009) - proximal gradient descent with
     Nesterov momentum. The combined quadratic penalty (Ridge + GraphNet) has
     closed-form proximal operator, enabling fast convergence.
+
+    CORRECTED (see CHANGELOG): two fixes applied to the original version.
+    (1) max_iter raised from 500 to 3000 -- 500 was insufficient for
+    lower-T/higher-N problems (e.g. ADNI, N=400, T=197), confirmed via
+    direct convergence-trajectory checks showing genuine, still-ongoing
+    convergence at 500 iterations, not a stall. (2) The convergence check
+    was reordered: A is now assigned from A_new BEFORE the tolerance
+    check, not after. The original ordering meant that whenever the loop
+    broke, it returned the value from BEFORE the update that actually
+    satisfied convergence -- for problems that converged in very few
+    iterations (confirmed on HCP and UNAM data), this meant the function
+    silently returned the unmodified ridge-only starting point,
+    regardless of lambda_graph, since the one update that would have
+    incorporated the graph term was computed and then discarded on every
+    call.
 
     Parameters
     ----------
@@ -209,11 +224,10 @@ def graphnet_effective_connectivity(
         grad_reg = 2.0 * (Reg @ Y.T).T
         A_new = Y - step * (grad_data + grad_reg)
 
-        if np.linalg.norm(A_new - A, 'fro') / (np.linalg.norm(A, 'fro') + 1e-12) < tol:
-            break
-
         A_prev = A.copy()
         A = A_new
+        if np.linalg.norm(A - A_prev, 'fro') / (np.linalg.norm(A_prev, 'fro') + 1e-12) < tol:
+            break
         t_k = (1.0 + np.sqrt(1.0 + 4.0 * t_k**2)) / 2.0
 
     return A
@@ -261,6 +275,10 @@ def block_bootstrap_ec(
     -----
     Compute cost is n_boot × (cost of ec_func). Benchmark on 2-3 subjects
     before launching the full batch (Phase 0 compute-budget check).
+
+    Uses graphnet_effective_connectivity's corrected version by default
+    (see that function's docstring) -- this function required no changes
+    itself, but every call it makes now benefits from the fix.
     """
     if ec_func is None:
         ec_func = graphnet_effective_connectivity
