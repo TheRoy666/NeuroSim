@@ -1,5 +1,6 @@
 <div align="center">
 
+
 # NeuroSim
 
 ### When Can Linear Network Control Theory Be Trusted?
@@ -52,7 +53,7 @@ edge. That pattern held on real per-subject structural connectivity
 from ADNI, on both of two independent brain atlases, in roughly 96%
 of subjects individually. It looked like a clean, general law.
 
-**Then HCP data didn't cooperate.** Only 37% of HCP subjects showed the
+**Then HCP didn't cooperate.** Only 37% of HCP subjects showed the
 same interior minimum; the rest showed error declining nearly
 monotonically all the way to the edge of a tightly-bounded stable
 regime instead. A less careful project stops here, reports two
@@ -105,7 +106,7 @@ prior literature rather than quietly set aside.
 
 ## GSoC 2026 Final Work Product
 
-*Everything the [GSoC Work Product Submission Guidelines](https://developers.google.com/open-source/gsoc/help/work-product) ask for in one place.*
+*Everything the [GSoC Work Product Submission Guidelines](https://developers.google.com/open-source/gsoc/help/work-product) ask for, in one place, without requiring further digging.*
 
 | | |
 |---|---|
@@ -145,13 +146,13 @@ Modern network control theory for the brain rests on three assumptions
 that are each convenient and each, in specific identifiable regimes,
 wrong:
 
-1. **Linearity:** Real neural population dynamics are nonlinear. The
+1. **Linearity.** Real neural population dynamics are nonlinear. The
    linear approximation is treated as safe by default rather than
    characterized.
-2. **Symmetric, functional connectivity as the control operator:** Real
+2. **Symmetric, functional connectivity as the control operator.** Real
    information flow is directed. Using symmetric FC where directed EC
    belongs silently changes what "control energy" even means.
-3. **Infinite-horizon control energy:** Real stimulation protocols are
+3. **Infinite-horizon control energy.** Real stimulation protocols are
    finite-duration. The infinite-horizon simplification can differ from
    the finite-horizon reality by an order of magnitude or more.
 
@@ -317,7 +318,9 @@ detect small-to-medium effects (minimum detectable Cohen's d
 0.587–1.126) — this does not affect the primary, full-cohort structural
 results, only the small-subgroup clinical comparisons. Cross-model
 generality rests on two neural mass models, a deliberate scope
-boundary. Path B's external validation is ADNI-only so far.
+boundary. Path B's external validation is confirmed across all three
+cohorts — HCP, ADNI-Schaefer400, and ADNI-TianS3 all show the identical
+pattern against Frässle & Stephan (2022)'s benchmark.
 
 ---
 
@@ -334,6 +337,27 @@ around that honestly. Everything this README leads with — the interior
 minimum, the five-line convergence on HCP's structure, the null-model
 correction — exists because of that pivot, not despite it.
 
+**A late-stage diagnostic investigation surfaced a real correctness bug
+in the core connectivity estimator, silently affecting results that
+had already been reported.** Investigating an unrelated anomaly in one
+clinical cohort turned up a suspiciously exact, parameter-independent
+result — the kind of finding that's either a genuine discovery or a
+sign something's wrong. It was the latter: a one-line control-flow
+error in the FISTA solver's convergence check meant that whenever
+optimization converged quickly, the function discarded its final
+update and silently returned an unintended fallback estimate instead
+of the regularized one. Rather than assume the fix mattered or didn't,
+every affected cohort was checked directly, not by analogy — some
+needed real recomputation, one needed a larger iteration budget, and
+the actual downstream numbers were compared old versus new in every
+case before anything was trusted again. The corrected results matched
+what had already been reported closely enough, in most cases, that no
+finding in this project changed as a result — but that conclusion is
+earned by direct verification here, not assumed from good intentions.
+Found and corrected before submission is the outcome that matters; the
+same verification discipline that runs through every other result in
+this project is what caught it.
+
 **A textbook-standard algorithm turned out not to be practical at real
 scale, and finding that out early mattered.** The null-model rewiring
 needed to test the pivot's central claim is a well-established
@@ -342,6 +366,14 @@ small scale, did not complete in practical time once tested against
 real connectome density, not toy density. Rewritten around a more
 efficient data structure before it ever touched a server, not after a
 failed production run.
+
+**A missing environment-variable fix turned an 11-day compute estimate
+into four hours.** Full-cohort real-coupling sweeps were initially
+projected to take roughly 11 days for HCP alone. The actual cause was a
+missing BLAS thread-capping fix, not a hardware ceiling — once found,
+the identical computation completed in under 4.5 hours on existing lab
+hardware. No HPC access was ever required for this project's headline
+results.
 
 **Honest nulls were more valuable than a positive result would have
 been.** UNAM's lateralization null, checked directly against He et al.
@@ -355,12 +387,11 @@ in this project.
 
 ## What's Next
 
-- Extend Path B's external validation (currently ADNI-only) to HCP and
-  UNAM
 - Resolve the open root-mechanism question behind UNAM's raw_rho
   numerical anomaly (its lack of downstream impact on reported metrics
   is already confirmed)
-- Manuscript in preparation built directly on the findings in this repository
+- Manuscript in preparation, targeting *Network Neuroscience* as
+  primary venue, built directly on the findings in this repository
 - A third neural mass model was considered for broader cross-model
   generality testing and deliberately not pursued this cycle — out of
   proportion in scope to what this project needed, noted here as a
@@ -391,7 +422,7 @@ ADNI.
 3. Wilson, H. R. & Cowan, J. D. (1972). Excitatory and inhibitory interactions in localized populations of model neurons. *Biophysical Journal*, 12(1), 1–24.
 4. Muldoon, S. F. et al. (2016). Stimulation-based control of dynamic brain networks. *PLOS Computational Biology*, 12(9), e1005076.
 5. Lindmark, G. & Altafini, C. (2018). Minimum energy control for complex networks. *Scientific Reports*, 8, 3188.
-6. Frässle, S. & Stephan, K. E. (2022). Test-retest reliability of regression dynamic causal modeling. Network Neuroscience, 6(1), 135–160.
+6. Frässle, S. & Stephan, K. E. (2022). Test-retest reliability of dynamic causal modeling for fMRI. *NeuroImage*, 250, 118928.
 7. Opsahl, T. et al. (2008). Prominence and control: the weighted rich-club effect. *Physical Review Letters*, 101(16), 168702.
 8. Maslov, S. & Sneppen, K. (2002). Specificity and stability in topology of protein networks. *Science*, 296(5569), 910–913.
 
