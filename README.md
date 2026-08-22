@@ -106,7 +106,7 @@ prior literature rather than quietly set aside.
 
 ## GSoC 2026 Final Work Product
 
-*Everything the [GSoC Work Product Submission Guidelines](https://developers.google.com/open-source/gsoc/help/work-product) ask for, in one place, without requiring further digging.*
+*Everything the [GSoC Work Product Submission Guidelines](https://developers.google.com/open-source/gsoc/help/work-product) ask for, in one place*
 
 | | |
 |---|---|
@@ -312,7 +312,7 @@ the more precise "degree and weight statistics matter."
 
 ### Honest Limitations
 
-Full quantitative detail in `docs/statistical_sensitivity_addendum.md`.
+Full quantitative detail in [`docs/statistical_sensitivity_addendum.md`](docs/statistical_sensitivity_addendum.md).
 None of this project's clinical subgroup comparisons were powered to
 detect small-to-medium effects (minimum detectable Cohen's d
 0.587–1.126) — this does not affect the primary, full-cohort structural
